@@ -32,9 +32,7 @@ Fully-differentiable boundary element solver for marine hydrodynamics. This new 
 
 
 > ⚠️ **Note**: This package is **work in progress** 🚧 and a separate public release of the package will be done in the future. This current state of the package contains necessary code to replicate the paper 📄.
->
-<div id="wcb" class="carbonbadge"></div>
-<script src="https://unpkg.com/website-carbon-badges@1.1.3/b.min.js" defer></script>
+
 
 
 
