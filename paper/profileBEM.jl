@@ -52,15 +52,4 @@ B(radius) = damping_program(radius,omega,dof)
 @show A(1.0)
 @btime Zygote.gradient(A, 1.0)
 
-
-using Base
-cpu_info = Sys.CPUInfo()
-memory_info = Sys.total_memory()
-os_info = Sys.OS()
-num_threads = Threads.nthreads()
-
-println("CPU Information: ", cpu_info)
-println("Total Memory: ", memory_info / (1024^3), " GB")  
-println("Operating System: ", os_info)
-println("Number of Threads: ", num_threads)
 nothing
