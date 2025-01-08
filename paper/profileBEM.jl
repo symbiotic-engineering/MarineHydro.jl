@@ -28,6 +28,7 @@ function integral_and_gradient(GF, element_1, element_2, wavenumber=nothing)
         BEM.integral_gradient(GF, element_1, element_2, wavenumber)
     )
 end
+omega = 1.03
 
 println("Rankine")
 @btime BEM.integral($(Rankine()), $element_1, $element_2)
