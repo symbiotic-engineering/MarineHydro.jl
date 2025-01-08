@@ -1,4 +1,4 @@
-![Test Status](https://github.com/symbiotic-engineering/MarineHydro.jll/actions/workflows/run_tests.yaml/badge.svg)
+![Test Status](https://github.com/symbiotic-engineering/MarineHydro.jl/actions/workflows/run_tests.yaml/badge.svg)
 
 ## Fully Differentiable Boundary Element Solver for Hydrodynamic Sensitivity Analysis of Wave-Structure Interactions
 
