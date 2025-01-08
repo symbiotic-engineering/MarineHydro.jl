@@ -1,7 +1,7 @@
 using Optim
 using Zygote
 using Plots
-include("/home/cornell/BEMJulia/BEM.jl/paper/Power.jl")
+include("/home/cornell/BEMJulia/MarineHydro.jl/paper/Power.jl")
 # Define the objective function
 # Wrapper to combine inputs for optimization
 function objective(x)

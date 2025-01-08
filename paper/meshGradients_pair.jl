@@ -8,7 +8,7 @@ cpt = pyimport("capytaine")
 resolution = (6,6)
 
 function cptMeshPair(radius,dx1)
-    radius1  = 1.0 #change this to radius for pair sphere study where both are indential ; this is to only get data for getting sensitivity of one sphere with other.da11/dr2
+    radius1  = radius #change this to radius for pair sphere study where both are indential ; this is to only get data for getting sensitivity of one sphere with other.da11/dr2
     cptmesh1 = cpt.mesh_sphere(name="sphere", radius = radius1,center = (0,0,0),resolution = resolution).immersed_part()
     cptmesh = cptmesh1 + cptmesh1.translated_x(radius+dx1) 
     return cptmesh

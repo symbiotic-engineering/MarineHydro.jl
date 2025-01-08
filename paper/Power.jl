@@ -14,7 +14,7 @@ function power(r1,dx1)
     rho = 1023
     omega= 1.03
     mesh = differentiableMeshPairs(r1,dx1)
-    ptodamp = 1e7
+    ptostiffness = -1e7
     C = hydrostatics(r1)
     M = hydrostatics(r1)
     Cmat = Diagonal([C,C])
@@ -58,7 +58,8 @@ function power(r1,dx1)
     # @show Amat
     # @show Bmat
     inertia = Mmat+Amat  
-    resistance = Bmat + Bmat #damping equal to radiationo damping
+    ptodamp = diag(Bmat)
+    resistance =Bmat + Diagonal(ptodamp) #damping equal to radiation damping
     reactance = Cmat #(+k_mat no pto damping - no reactive control) 
     H = omega^2 * inertia + -1im*omega*resistance + reactance
     ##============Diffraction Force ====================== #
@@ -77,16 +78,16 @@ function power(r1,dx1)
     Fvec = difraction_Force + Froudekrylov
     ##============Equation of motion ====================== #
     Xi = implicit_linear(H,Fvec)
-    P = (1/2)*ptodamp*abs.(Xi*omega*1im).^2/1000
+    P = (1/2) .* ptodamp .* abs.(Xi.*omega.*1im).^2
     return sum(P ./ ((2/3)* pi*r1^3)) 
 end
 
 r1 = 1.0
-dx1 = 5.0
+dx1 = 4.0
 
-@show power(r1,dx1)
-@show ForwardDiff.gradient(r1 -> power(r1,dx1), r1)
-# @show Zygote.gradient(dx1 -> power(r1,dx1), dx1)
+# @show power(r1,dx1)
+# @show ForwardDiff.gradient(r1 -> power(r1,dx1), r1)
+#@show Zygote.gradient(dx1 -> power(r1,dx1), dx1)
 
 # # ## Just for reference - checking accuracy of computed coeffficients
 # cpt = pyimport("capytaine")

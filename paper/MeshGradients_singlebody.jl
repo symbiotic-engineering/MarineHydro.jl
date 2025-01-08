@@ -11,7 +11,6 @@ resolution = (6,6)
 function cptMesh(radius)
         cptmesh = cpt.mesh_sphere(name="sphere", radius = radius,center = (0,0,0),resolution = resolution)
         cptmesh.keep_immersed_part(inplace = true)
-        @show cptmesh.nb_faces
     return cptmesh
 end
 
