@@ -1,5 +1,5 @@
 using Plots
-include("power.jl")
+include("Power.jl")
 
 # Define the bounds
 lower = [1.0, 1.0]

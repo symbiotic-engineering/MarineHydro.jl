@@ -115,7 +115,7 @@ savefig("/home/cornell/BEMJulia/BEM.jl/paper/Plots/diffraction_comparison.pdf")
 ## Frroude Krylov
 
 function froudeKrylovProgram(r,ω,dof)
-    mesh = differentiableMesh(r,0.0) #fd
+    mesh = differentiableMesh(r) #fd
     force = FroudeKrylovForce(mesh::Mesh, ω,dof)
     return force
 end
@@ -133,73 +133,73 @@ plot!(legend=:topright, grid=true)
 savefig("/home/cornell/BEMJulia/BEM.jl/paper/Plots/froudeKrylov_comparison.pdf")
 
 
-# # plot(K_heave_diff, imag.(capy_diff_omega), marker=:circle, label="capy (Im(Fe))", color=vermillion, linestyle=:dash)
-# # plot!(K_heave_diff, imag.(julia_diff_omega), marker=:square, label="julia (Im(Fe))", color=bluishgreen, linestyle=:solid)
-# # #plot!(K_heave_diff, F_heave, marker=:square, label="analyytical", color=:green, linestyle=:dash)
+plot(K_heave_diff, imag.(capy_diff_omega), marker=:circle, label="capy (Im(Fe))", color=vermillion, linestyle=:dash)
+plot!(K_heave_diff, imag.(julia_diff_omega), marker=:square, label="julia (Im(Fe))", color=bluishgreen, linestyle=:solid)
+#plot!(K_heave_diff, F_heave, marker=:square, label="analyytical", color=:green, linestyle=:dash)
 
-# # xlabel!("K")
-# # ylabel!("non-dimensional Im(Fe)")
-# # title!("Comparison of imaginary component of Diffraction Forces ")
-# # plot!(legend=:topright, grid=true)
+xlabel!("K")
+ylabel!("non-dimensional Im(Fe)")
+title!("Comparison of imaginary component of Diffraction Forces ")
+plot!(legend=:topright, grid=true)
 
-# # savefig("diffraction_comparison_imag.pdf")
-
-
-# # plot(K_heave_diff, abs.(capy_diff_omega), marker=:circle, label="capytaine", color=vermillion, linestyle=:dash)
-# # plot!(K_heave_diff, abs.(julia_diff_omega), marker=:square, label="new solver", color=bluishgreen, linestyle=:solid)
-# # #plot!(K_heave_diff, F_heave, marker=:square, label="analyytical", color=:green, linestyle=:dash)
-
-# # xlabel!("K")
-# # ylabel!("non-dimensional Fe")
-# # title!("Comparison of Diffraction Forces ")
-# # plot!(legend=:topright, grid=true)
-
-# # savefig("diffraction_comparison.pdf")
+savefig("diffraction_comparison_imag.pdf")
 
 
-# # comparing the value and gradients for sphere with no frequency 
-# # omega = 1.0
+plot(K_heave_diff, abs.(capy_diff_omega), marker=:circle, label="capytaine", color=vermillion, linestyle=:dash)
+plot!(K_heave_diff, abs.(julia_diff_omega), marker=:square, label="new solver", color=bluishgreen, linestyle=:solid)
+#plot!(K_heave_diff, F_heave, marker=:square, label="analyytical", color=:green, linestyle=:dash)
 
-# # # using Printf
+xlabel!("K")
+ylabel!("non-dimensional Fe")
+title!("Comparison of Diffraction Forces ")
+plot!(legend=:topright, grid=true)
 
-# # # Constants
-# # const π = 3.141592653589793 
-# # rho = 1023  
-
-# # radii = [1,2,3,4,5]
-
-# # # #  reference added mass when no wave frequency
-# # function reference_added_mass(radius)
-# #     return (2 / 3) * π * rho * radius^3
-# # end
-
-# # # # Function to calculate the differential of the added mass with respect to radius
-# # function reference_diff_added_mass(radius)
-# #     return 2 * π * rho * radius^2
-# # end
+savefig("diffraction_comparison.pdf")
 
 
-# # results_amass_solver =  [added_mass_program(r,omega,surge) for r in radii ] #./  ((2/3)*pi*1*1023);
-# # results_amass_solver =  [reference_added_mass(r) for r in radii ]
+###### =====comparing the value and gradients for sphere with no frequency =====#
+omega = 1.0
 
-# # analy_grady = [reference_diff_added_mass(r) ./  ((2/3)*pi*r^3*rho) for r in radii];
+# using Printf
+
+# Constants
+const π = 3.141592653589793 
+rho = 1023  
+
+radii = [1,2,3,4,5]
+
+# #  reference added mass when no wave frequency
+function reference_added_mass(radius)
+    return (2 / 3) * π * rho * radius^3
+end
+
+# # Function to calculate the differential of the added mass with respect to radius
+function reference_diff_added_mass(radius)
+    return 2 * π * rho * radius^2
+end
 
 
-# # # _gradients = Array{Any}(undef, length(radii))
+results_amass_solver =  [added_mass_program(r,omega,surge) for r in radii ] #./  ((2/3)*pi*1*1023);
+results_amass_solver =  [reference_added_mass(r) for r in radii ]
 
-# # # # for (i, r) in enumerate(radii)
-# # # #         grads = Zygote.gradient(X -> rankine_program(X[1], X[2]), [r, omega, surge])[1][1]
-# # # #         _gradients[i] = grads # completelly submerged not just half floating free surface at 0
-# # # #     end
+analy_grady = [reference_diff_added_mass(r) ./  ((2/3)*pi*r^3*rho) for r in radii];
 
-# # _gradients = [6555.47838568984, 26221.913542847837, 58999.30547136783, 104887.65417050153, 163886.9596426078]
 
-# # _gradients = _gradients ./ ((2/3).*pi.*(radii.^3).*rho)
+# _gradients = Array{Any}(undef, length(radii))
 
-# # ##_grad_coarse =  [6529.024840896878, 26116.099363590965, 58761.22356808913, 104464.3974542766, 163225.6210222983] ./ ((2/3).*pi.*radii.*1000);
-# # _grad_fine =  [6552.7934287808785, 26211.17371512438, 58975.14085905893, 104844.69486049563, 163819.83571945396] ./ ((2/3).*pi.*(radii.^3).*rho);
+# # for (i, r) in enumerate(radii)
+# #         grads = Zygote.gradient(X -> rankine_program(X[1], X[2]), [r, omega, surge])[1][1]
+# #         _gradients[i] = grads # completelly submerged not just half floating free surface at 0
+# #     end
 
-# # #plot(radii, _grad_coarse, xlabel="r [m]", ylabel="∂A_∂ω", label="AD (coarse mesh)",marker = "*")
-# # plot(radii, _gradients , xlabel="r[m]", ylabel="∂A_∂r (non-dimensional)", label="AD",marker = "*",color = vermillion)
-# # plot!(radii,analy_grady  , xlabel="r [m]", label="analytical",marker = "*" , color = bluishgreen)
-# # savefig("analy_ad_AMass_surge.pdf")
+_gradients = [6555.47838568984, 26221.913542847837, 58999.30547136783, 104887.65417050153, 163886.9596426078]
+
+_gradients = _gradients ./ ((2/3).*pi.*(radii.^3).*rho)
+
+##_grad_coarse =  [6529.024840896878, 26116.099363590965, 58761.22356808913, 104464.3974542766, 163225.6210222983] ./ ((2/3).*pi.*radii.*1000);
+_grad_fine =  [6552.7934287808785, 26211.17371512438, 58975.14085905893, 104844.69486049563, 163819.83571945396] ./ ((2/3).*pi.*(radii.^3).*rho);
+
+#plot(radii, _grad_coarse, xlabel="r [m]", ylabel="∂A_∂ω", label="AD (coarse mesh)",marker = "*")
+plot(radii, _gradients , xlabel="r[m]", ylabel="∂A_∂r (non-dimensional)", label="AD",marker = "*",color = vermillion)
+plot!(radii,analy_grady  , xlabel="r [m]", label="analytical",marker = "*" , color = bluishgreen)
+savefig("analy_ad_AMass_surge.pdf")
