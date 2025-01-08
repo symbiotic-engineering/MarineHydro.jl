@@ -55,7 +55,7 @@ print(_gradients .- fd_julia )
 plot(collect(radius_range), _gradients , xlabel="r(radius)", ylabel="∂A_∂r", label="AD", marker = "*",color = vermillion,linestyle = :dash)
 plot!(collect(radius_range), fd_julia, xlabel="r(radius)", ylabel="∂A_∂r", label="FD",marker = "*",color = bluishgreen,linestyle = :solid)
 
-savefig("/home/cornell/BEMJulia/BEM.jl/paper/Plots/fd_ad_added_mass_heave_with_radius.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/fd_ad_added_mass_heave_with_radius.pdf")
 
 #### damping ###
 damping_fd(radius) = damping_program(radius,w,heave)
@@ -72,7 +72,7 @@ print(_gradients .- fd_julia )
 plot(collect(radius_range), _gradients , xlabel="r(radius)", ylabel="∂B_∂r", label="AD", marker = "*",color = vermillion,linestyle = :dash)
 plot!(collect(radius_range), fd_julia, xlabel="r(radius)", ylabel="∂B_∂r", label="FD",marker = "*",color = bluishgreen,linestyle = :solid)
 
-savefig("/home/cornell/BEMJulia/BEM.jl/paper/Plots/fd_ad_damping_heave_with_radius.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/fd_ad_damping_heave_with_radius.pdf")
 
 
 
@@ -90,4 +90,4 @@ for (i, omega) in enumerate(omega_range)
 
 plot(omega_range, fd_julia, xlabel="ω", ylabel="∂A_∂ω", label="FD",marker = "*",color = bluishgreen,linestyle = :solid)
 plot!(omega_range, _gradients , xlabel="ω", ylabel="∂A_∂ω", label="AD", marker = "*",color = vermillion,linestyle = :dash)
-savefig("/home/cornell/BEMJulia/BEM.jl/paper/Plots/fd_ad_added_mass_omega_heave.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/fd_ad_added_mass_omega_heave.pdf")

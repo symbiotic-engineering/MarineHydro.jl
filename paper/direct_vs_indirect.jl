@@ -27,7 +27,7 @@ function added_mass_program(radius,omega,dof,direct)
     return A
 end
 
-function damping_program(radius,omega,dof)  
+function damping_program(radius,omega,dof,direct)  
     mesh = differentiableMesh(radius) #fd
     B = radiation_forces(mesh,dof,omega;direct)[2]
     return B
@@ -59,3 +59,16 @@ plot(collect(radius_range), indirect_gradients , xlabel="r(radius)", ylabel="∂
 plot!(collect(radius_range), direct_gradients, xlabel="r(radius)", ylabel="∂A_∂r", label="direct BIE",marker = "*",color = bluishgreen,linestyle = :solid)
 
 savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/direct_indirect_ad_added_mass_heave_with_radius.pdf")
+
+
+for (i, r) in enumerate(radius_range)
+    grads_indirect = Zygote.gradient(X -> damping_program(X[1], X[2], X[3],false), [r, w, heave])[1][1]
+    indirect_gradients[i] = grads_indirect
+    grads_direct = Zygote.gradient(X -> damping_program(X[1], X[2], X[3],true), [r, w, heave])[1][1]
+    direct_gradients[i] = grads_direct
+end
+
+plot(collect(radius_range), indirect_gradients , xlabel="r(radius)", ylabel="∂B_∂r", label="indirect BIE", marker = "*",color = vermillion,linestyle = :dash)
+plot!(collect(radius_range), direct_gradients, xlabel="r(radius)", ylabel="∂B_∂r", label="direct BIE",marker = "*",color = bluishgreen,linestyle = :solid)
+
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/direct_indirect_ad_damping_heave_with_radius.pdf")
