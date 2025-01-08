@@ -1,11 +1,13 @@
+![Test Status](https://github.com/symbiotic-engineering/MarineHydro.jl/actions/workflows/run_tests.yml/badge.svg)
+![GitHub](https://img.shields.io/github/license/symbiotic-engineering/MDOcean)
 
-## Fully Differentiable Boundary Element Solver for Hydrodynamic Sensitivity Analysis of Wave-Structure Interactions
+### Fully Differentiable Boundary Element Solver for Hydrodynamic Sensitivity Analysis of Wave-Structure Interactions
 
-### Authors
+#### Authors
 
 **Kapil Khanal<sup>a,b</sup>, Carlos A. Michelén Ströfer<sup>b</sup>, Matthieu Ancellin<sup>c</sup>, Maha Haji<sup>a</sup>**
 
-### Affiliations
+#### Affiliations
 
 - **<sup>a</sup>Cornell University**  
   Ithaca, NY 14850, USA
@@ -25,10 +27,11 @@
 
 
 
-Fully-differentiable boundary element solver for marine hydrodynamics. This new solver implements both direct and indirect boundary element formulations and uses two green's function expression, Wu et al, and Delhommeau's varying in their accuracy and speed. This paper 
+Fully-differentiable boundary element solver for marine hydrodynamics. This new solver implements both direct and indirect boundary element formulations and uses two green's function expression, Wu et al, and Delhommeau's varying in their accuracy and speed. 
 <img width="632" alt="image" src="https://github.com/user-attachments/assets/16247838-770b-480d-9f2f-d4b0a02054bf" />
 
 
+> ⚠️ **Note**: This package is **work in progress** 🚧 and a separate public release of the package will be done in the future. This current state of the package contains necessary code to replicate the paper 📄.
 
 
 
