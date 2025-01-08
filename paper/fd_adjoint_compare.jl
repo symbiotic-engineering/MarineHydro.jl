@@ -10,7 +10,7 @@ vermillion = RGB(213/255, 94/255, 0/255)
 bluishgreen = RGB(0/255, 158/255, 115/255)  
 
 
-include("/home/cornell/BEMJulia/BEM.jl/paper/Power.jl")
+include("/home/cornell/BEMJulia/MarineHydro.jl/paper/Power.jl")
 
 function objective(x)
     p = -1*power(x[1], x[2])
@@ -32,7 +32,10 @@ function zygote_gradient(f, x)
     return grad
 end
 
-# Test and compare
+@show finite_diff_gradient(objective, [1.0,5.0])
+@show zygote_gradient(objective, [1.0,5.0])
+
+
 function compare_gradients(x_dummy)
     zyg_grad = zygote_gradient(augmented_objective, x_dummy)
     fd_grad = finite_diff_gradient(augmented_objective, x_dummy)

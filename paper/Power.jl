@@ -77,13 +77,14 @@ function power(r1,dx1)
    # @show Froudekrylov
     Fvec = difraction_Force + Froudekrylov
     ##============Equation of motion ====================== #
-    Xi = implicit_linear(H,Fvec)
-    P = (1/2) .* ptodamp .* abs.(Xi.*omega.*1im).^2
+    Ξ = implicit_linear(H,Fvec)
+    P = (1/2) .* ptodamp .* abs.(Ξ.*omega.*1im).^2
     return sum(P ./ ((2/3)* pi*r1^3)) 
 end
 
 r1 = 1.0
 dx1 = 4.0
+
 
 # @show power(r1,dx1)
 # @show ForwardDiff.gradient(r1 -> power(r1,dx1), r1)
