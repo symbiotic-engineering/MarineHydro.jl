@@ -1,0 +1,3 @@
+# Python requirements for the tests
+capytaine==2.2.1
+

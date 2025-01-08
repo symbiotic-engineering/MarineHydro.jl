@@ -1,0 +1,10 @@
+[deps]
+ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+DimensionfulAngles = "2d4b8d7a-02d9-40f9-9abe-9c695b77de0d"
+ImplicitAD = "e7cbb90b-9b31-4eb2-a8c8-45099c074ee1"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
