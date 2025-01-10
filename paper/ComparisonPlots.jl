@@ -11,6 +11,12 @@ orange = RGB(230/255,159/255,0/255)
 vermillion = RGB(213/255, 94/255, 0/255) 
 bluishgreen = RGB(0/255, 158/255, 115/255) 
 
+default(
+    guidefont = font(15),   # Axis labels
+    tickfont = font(12),    # Tick labels
+    legendfont = font(13)   # Legend text
+)
+
 # ffix resoluution first in meshGradients.jl - for gradient calculations they need to be decreased as it takes a long time with this naive implementation.
 # Combine colors in a plot or visualization
 using Plots
@@ -25,46 +31,46 @@ results_damping =  [damping_program(1.0,wn,heave)/wn for wn in omegas ] ./ ((2/3
 results_amass =  [added_mass_program(1.0,wn,heave) for wn in omegas ] ./ ((2/3)*pi*1*1023);
 
 # # # Plotting results with respect to wavenumbers
-plot(K_heave,  results_damping, xlabel = "kR", ylabel = "value",
-      label = "damping-new solver", marker = :circle, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
+plot(K_heave,  results_damping, xlabel = "kR", ylabel = "B(kR)",
+      label = "new solver", marker = :circle, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
 
 plot!(K_heave,B_heave, xlabel = "kR",
-      label = "damping-analytical", marker = :circle, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen, linestyle=:dot )
+      label = "analytical", marker = :circle, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen, linestyle=:dot )
 
-savefig("/home/cornell/BEMJulia/BEM.jl/paper/Plots/HemisphereCoefficientComparison_damping.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/HemisphereCoefficientComparison_damping.pdf")
 
-plot(K_heave,  results_amass, xlabel = "kR",
-     label = "added mass-new solver", marker = :diamond, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
+plot(K_heave,  results_amass, xlabel = "kR",ylabel = "A(kR)",
+     label = "new solver", marker = :diamond, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
 
 plot!(K_heave,A_heave, xlabel = "kR", 
-     label = "added mass-analytical", marker = :diamond, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen , linestyle=:dot )
+     label = "analytical", marker = :diamond, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen , linestyle=:dot )
 
-savefig("/home/cornell/BEMJulia/BEM.jl/paper/Plots/HemisphereCoefficientComparison_amass.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/HemisphereCoefficientComparison_amass.pdf")
   
 
 
 # # ##### SUURGE ####
 
-# omegas = sqrt.(K_surge .* 9.8)
-# results_damping =  [damping_program(1.0,wn,surge)/wn for wn in omegas ] ./ ((2/3)*pi*1*1023);
-# results_amass =  [added_mass_program(1.0,wn,surge) for wn in omegas ] ./ ((2/3)*pi*1*1023);
+omegas = sqrt.(K_surge .* 9.8)
+results_damping =  [damping_program(1.0,wn,surge)/wn for wn in omegas ] ./ ((2/3)*pi*1*1023);
+results_amass =  [added_mass_program(1.0,wn,surge) for wn in omegas ] ./ ((2/3)*pi*1*1023);
 
-# # # Plotting results with respect to wavenumbers
-# plot(K_surge,  results_damping, xlabel = "kR", ylabel = "value",
-#      label = "damping-new solver", marker = :circle, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
+# # Plotting results with respect to wavenumbers
+plot(K_surge,  results_damping, xlabel = "kR", ylabel = "B(kR)",
+     label = "new solver", marker = :circle, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
 
-# plot!(K_surge, B_surge, xlabel = "kR",
-#      label = "damping-analytical", marker = :circle, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen, linestyle=:dot )
+plot!(K_surge, B_surge, xlabel = "kR",
+     label = "analytical", marker = :circle, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen, linestyle=:dot )
 
-# savefig("Surge_HemisphereCoefficientComparison_damping.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/Surge_HemisphereCoefficientComparison_damping.pdf")
 
-# plot(K_surge,  results_amass, xlabel = "kR",
-#      label = "added mass-new solver", marker = :diamond, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
+plot(K_surge,  results_amass, xlabel = "kR",ylabel = "A(kR)",
+     label = "new solver", marker = :diamond, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
 
-# plot!(K_surge, A_surge, xlabel = "kR", 
-#      label = "added mass-analytical", marker = :diamond, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen , linestyle=:dot )
+plot!(K_surge, A_surge, xlabel = "kR", 
+     label = "analytical", marker = :diamond, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen , linestyle=:dot )
 
-# savefig("Surge_HemisphereCoefficientComparison_amass.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/Surge_HemisphereCoefficientComparison_amass.pdf")
 
 
 
@@ -102,15 +108,15 @@ non_dimensional_const = ((2/3) * pi * r * 1023)
 julia_diff_omega = [diffraction_program(w, r, heave) for w in omegas] ./ non_dimensional_const
 
 # Plot the results
-plot(K_heave_diff, abs.(Diff_heave), marker=:circle, label="Capytaine", color=bluishgreen, linestyle=:dash)
-plot!(K_heave_diff, abs.(julia_diff_omega), marker=:square, label="New Solver", color=vermillion, linestyle=:solid)
+plot(K_heave_diff, abs.(Diff_heave), marker=:circle, label="capytaine", color=bluishgreen, linestyle=:dash)
+plot!(K_heave_diff, abs.(julia_diff_omega), marker=:square, label="new solver", color=vermillion, linestyle=:solid)
 
-xlabel!("K")
+xlabel!("kR")
 ylabel!("Diffraction Force")
 title!("Comparison of diffraction forces")
 plot!(legend=:topright, grid=true)
 
-savefig("/home/cornell/BEMJulia/BEM.jl/paper/Plots/diffraction_comparison.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/diffraction_comparison.pdf")
 
 ## Frroude Krylov
 
@@ -123,38 +129,16 @@ end
 non_dimensional_const = ((2/3) * pi * r * 1023)
 julia_froude_omega = [froudeKrylovProgram(r, w,heave) for w in omegas] ./ non_dimensional_const
 # Plot the results
-plot(K_heave_diff, abs.(Froude_heave), marker=:circle, label="Capytaine", color=bluishgreen, linestyle=:dash)
-plot!(K_heave_diff, abs.(julia_froude_omega), marker=:square, label="New Solver", color=vermillion, linestyle=:solid)
+plot(K_heave_diff, abs.(Froude_heave), marker=:circle, label="capytaine", color=bluishgreen, linestyle=:dash)
+plot!(K_heave_diff, abs.(julia_froude_omega), marker=:square, label="new solver", color=vermillion, linestyle=:solid)
 
 xlabel!("K")
 ylabel!("Froude Krylov Force")
 title!("Comparison of froude krylov forces")
 plot!(legend=:topright, grid=true)
-savefig("/home/cornell/BEMJulia/BEM.jl/paper/Plots/froudeKrylov_comparison.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/froudeKrylov_comparison.pdf")
 
 
-plot(K_heave_diff, imag.(capy_diff_omega), marker=:circle, label="capy (Im(Fe))", color=vermillion, linestyle=:dash)
-plot!(K_heave_diff, imag.(julia_diff_omega), marker=:square, label="julia (Im(Fe))", color=bluishgreen, linestyle=:solid)
-#plot!(K_heave_diff, F_heave, marker=:square, label="analyytical", color=:green, linestyle=:dash)
-
-xlabel!("K")
-ylabel!("non-dimensional Im(Fe)")
-title!("Comparison of imaginary component of Diffraction Forces ")
-plot!(legend=:topright, grid=true)
-
-savefig("diffraction_comparison_imag.pdf")
-
-
-plot(K_heave_diff, abs.(capy_diff_omega), marker=:circle, label="capytaine", color=vermillion, linestyle=:dash)
-plot!(K_heave_diff, abs.(julia_diff_omega), marker=:square, label="new solver", color=bluishgreen, linestyle=:solid)
-#plot!(K_heave_diff, F_heave, marker=:square, label="analyytical", color=:green, linestyle=:dash)
-
-xlabel!("K")
-ylabel!("non-dimensional Fe")
-title!("Comparison of Diffraction Forces ")
-plot!(legend=:topright, grid=true)
-
-savefig("diffraction_comparison.pdf")
 
 
 ###### =====comparing the value and gradients for sphere with no frequency =====#
@@ -200,6 +184,6 @@ _gradients = _gradients ./ ((2/3).*pi.*(radii.^3).*rho)
 _grad_fine =  [6552.7934287808785, 26211.17371512438, 58975.14085905893, 104844.69486049563, 163819.83571945396] ./ ((2/3).*pi.*(radii.^3).*rho);
 
 #plot(radii, _grad_coarse, xlabel="r [m]", ylabel="∂A_∂ω", label="AD (coarse mesh)",marker = "*")
-plot(radii, _gradients , xlabel="r[m]", ylabel="∂A_∂r (non-dimensional)", label="AD",marker = "*",color = vermillion)
+plot(radii, _gradients , xlabel="r [m]", ylabel="∂A_∂r", label="AD",marker = "*",color = vermillion)
 plot!(radii,analy_grady  , xlabel="r [m]", label="analytical",marker = "*" , color = bluishgreen)
-savefig("analy_ad_AMass_surge.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/analy_ad_AMass_surge.pdf")
