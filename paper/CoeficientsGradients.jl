@@ -52,34 +52,34 @@ added_mass_program_fd(radius) = added_mass_program(radius,w,heave)
 fd_julia = [central_fdm(3, 1)(added_mass_program_fd, r) for r in radius_range] #check w omega
 _gradients = Array{Any}(undef, length(radius_range))
 
-# for (i, r) in enumerate(radius_range)
-#         grads = Zygote.gradient(X -> added_mass_program(X[1], X[2], X[3]), [r, w, heave])[1][1]
-#         _gradients[i] = grads
-#     end
-# println(fd_julia)
-# println(_gradients )
-# print(_gradients .- fd_julia )
-# plot(collect(radius_range), _gradients , xlabel="r [m]", ylabel="∂A_∂r", label="AD", marker = (:circle, 6, 0.8, :match),color = vermillion,linestyle = :dash)
-# plot!(collect(radius_range), fd_julia, xlabel="r [m]", ylabel="∂A_∂r", label="FD",marker = "*",color = bluishgreen,linestyle = :solid)
+for (i, r) in enumerate(radius_range)
+        grads = Zygote.gradient(X -> added_mass_program(X[1], X[2], X[3]), [r, w, heave])[1][1]
+        _gradients[i] = grads
+    end
+println(fd_julia)
+println(_gradients )
+print(_gradients .- fd_julia )
+plot(collect(radius_range), _gradients , xlabel="r [m]", ylabel="∂A_∂r", label="AD", marker = (:circle, 6, 0.8, :match),color = vermillion,linestyle = :dash)
+plot!(collect(radius_range), fd_julia, xlabel="r [m]", ylabel="∂A_∂r", label="FD",marker = "*",color = bluishgreen,linestyle = :solid)
 
-# savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/fd_ad_added_mass_heave_with_radius.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/fd_ad_added_mass_heave_with_radius.pdf")
 
-# #### damping ###
-# damping_fd(radius) = damping_program(radius,w,heave)
-# fd_julia = [central_fdm(3, 1)(damping_fd, r) for r in radius_range] #check w omega
-# _gradients = Array{Any}(undef, length(radius_range))
+#### damping ###
+damping_fd(radius) = damping_program(radius,w,heave)
+fd_julia = [central_fdm(3, 1)(damping_fd, r) for r in radius_range] #check w omega
+_gradients = Array{Any}(undef, length(radius_range))
 
-# for (i, r) in enumerate(radius_range)
-#     grads = Zygote.gradient(X -> damping_program(X[1], X[2], X[3]), [r, w, heave])[1][1]
-#     _gradients[i] = grads
-# end
-# println(fd_julia)
-# println(_gradients )
-# print(_gradients .- fd_julia )
-# plot(collect(radius_range), _gradients , xlabel="r [m]", ylabel="∂B_∂r", label="AD", marker = (:circle, 6, 0.8, :match),color = vermillion,linestyle = :dash)
-# plot!(collect(radius_range), fd_julia, xlabel="r [m]", ylabel="∂B_∂r", label="FD",marker = "*",color = bluishgreen,linestyle = :solid)
+for (i, r) in enumerate(radius_range)
+    grads = Zygote.gradient(X -> damping_program(X[1], X[2], X[3]), [r, w, heave])[1][1]
+    _gradients[i] = grads
+end
+println(fd_julia)
+println(_gradients )
+print(_gradients .- fd_julia )
+plot(collect(radius_range), _gradients , xlabel="r [m]", ylabel="∂B_∂r", label="AD", marker = (:circle, 6, 0.8, :match),color = vermillion,linestyle = :dash)
+plot!(collect(radius_range), fd_julia, xlabel="r [m]", ylabel="∂B_∂r", label="FD",marker = "*",color = bluishgreen,linestyle = :solid)
 
-# savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/fd_ad_damping_heave_with_radius.pdf")
+savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/fd_ad_damping_heave_with_radius.pdf")
 
 
 
