@@ -60,7 +60,7 @@ Fully-differentiable boundary element solver for marine hydrodynamics. This new 
 2. **Clone the Repository**  
    Open a terminal and run:  
    ```bash
-   git clone [https://github.com/KapilKhanal/MarineHydro.jl.git](https://github.com/symbiotic-engineering/MarineHydro.jl.git)
+   git clone https://github.com/symbiotic-engineering/MarineHydro.jl.git
    cd MarineHydro.jl
 
 
