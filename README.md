@@ -92,5 +92,5 @@ For differentiability with respect to mesh dimension, use `paper/MeshGradients_s
 Differentiability needs an AD engine: use Zygote
 ```julia
 using Zygote
-A_w_grad, = Zygote.gradient(w -> calculate_radiation_forces(mesh,dof,w)[1],ω)
+A_w_grad, = Zygote.gradient(w -> calculate_radiation_forces(mesh,ζ,w)[1],ω)
 ```
