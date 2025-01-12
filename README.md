@@ -28,7 +28,7 @@ Fully-differentiable boundary element solver for marine hydrodynamics. This new 
 <img width="632" alt="image" src="https://github.com/user-attachments/assets/16247838-770b-480d-9f2f-d4b0a02054bf" />
 
 
-> ⚠️ **Note**: This package is **work in progress** 🚧 and a separate public release of the package will be done in the future. This current state of the package contains necessary code to replicate the paper 📄.
+> ⚠️ **Note**: This package is **work in progress** 🚧 and a separate public release of the package will be done in the future. This current state of the package contains necessary code to replicate the paper 📄. It will go through a significant change in its API for users in future iterations.
 >
 
 ### Repository: MarineHydro.jl
