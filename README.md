@@ -80,8 +80,17 @@ cptmesh = cpt.mesh_sphere(name="sphere", radius=radius, center=(0, 0, 0), resolu
 cptmesh.keep_immersed_part(inplace=true)
 
 # declare it Julia mesh
-mesh = Mesh(cptmesh)
+mesh = Mesh(cptmesh)  
 ω = 1.03
 ζ = [0,0,1] # HEAVE: will be more verbose in future iteration. define it again even if defined in Capytaine.
 F = DiffractionForce(mesh,ω,ζ)
 A,B = calculate_radiation_forces(mesh,ζ,ω)
+```
+
+5. **Differentiability** :
+For differentiability with respect to mesh dimension, use `paper/MeshGradients_singlebody.jl`
+Differentiability needs an AD engine: use Zygote
+```julia
+using Zygote
+A_w_grad, = Zygote.gradient(w -> calculate_radiation_forces(mesh,dof,w)[1],ω)
+```
