@@ -67,7 +67,13 @@ Fully-differentiable boundary element solver for marine hydrodynamics. This new 
    using Pkg
    Pkg.activate(".")
    Pkg.instantiate()
-4. **Using the BEM Module**  
+   ```
+4. **Configure PyCall**
+   ```
+   ENV["PYTHON"] = "/path/to/capytaine_env/bin/python" # run 'which python' in your terminal for this
+   ```
+  
+6. **Using the BEM Module**  
 Load the module in your Julia session:  
 ```julia
 using BEM
@@ -87,7 +93,7 @@ F = DiffractionForce(mesh,ω,ζ)
 A,B = calculate_radiation_forces(mesh,ζ,ω)
 ```
 
-5. **Differentiability** :
+6. **Differentiability** :
 For differentiability with respect to mesh dimension, use `paper/MeshGradients_singlebody.jl`
 Differentiability needs an AD engine: use Zygote
 ```julia
