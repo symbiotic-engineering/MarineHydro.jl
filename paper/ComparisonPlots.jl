@@ -113,7 +113,6 @@ plot!(K_heave_diff, abs.(julia_diff_omega), marker=:square, label="new solver", 
 
 xlabel!("kR")
 ylabel!("Diffraction Force")
-title!("Comparison of diffraction forces")
 plot!(legend=:topright, grid=true)
 
 savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/diffraction_comparison.pdf")
@@ -132,9 +131,8 @@ julia_froude_omega = [froudeKrylovProgram(r, w,heave) for w in omegas] ./ non_di
 plot(K_heave_diff, abs.(Froude_heave), marker=:circle, label="capytaine", color=bluishgreen, linestyle=:dash)
 plot!(K_heave_diff, abs.(julia_froude_omega), marker=:square, label="new solver", color=vermillion, linestyle=:solid)
 
-xlabel!("K")
+xlabel!("kR")
 ylabel!("Froude Krylov Force")
-title!("Comparison of froude krylov forces")
 plot!(legend=:topright, grid=true)
 savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/froudeKrylov_comparison.pdf")
 

@@ -5,7 +5,7 @@ using PyCall
 using Zygote
 
 cpt = pyimport("capytaine")
-resolution = (6,6)
+resolution = (14,14)
 
 
 function cptMesh(radius)
