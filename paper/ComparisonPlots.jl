@@ -31,18 +31,18 @@ results_damping =  [damping_program(1.0,wn,heave)/wn for wn in omegas ] ./ ((2/3
 results_amass =  [added_mass_program(1.0,wn,heave) for wn in omegas ] ./ ((2/3)*pi*1*1023);
 
 # # # Plotting results with respect to wavenumbers
-plot(K_heave,  results_damping, xlabel = "kR", ylabel = "B(kR)",
+plot(K_heave,  results_damping, xlabel = "kr", ylabel = "B(kr)",
       label = "new solver", marker = :circle, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
 
-plot!(K_heave,B_heave, xlabel = "kR",
+plot!(K_heave,B_heave, xlabel = "kr",
       label = "analytical", marker = :circle, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen, linestyle=:dot )
 
 savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/HemisphereCoefficientComparison_damping.pdf")
 
-plot(K_heave,  results_amass, xlabel = "kR",ylabel = "A(kR)",
+plot(K_heave,  results_amass, xlabel = "kr",ylabel = "A(kr)",
      label = "new solver", marker = :diamond, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
 
-plot!(K_heave,A_heave, xlabel = "kR", 
+plot!(K_heave,A_heave, xlabel = "kr", 
      label = "analytical", marker = :diamond, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen , linestyle=:dot )
 
 savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/HemisphereCoefficientComparison_amass.pdf")
@@ -56,18 +56,18 @@ results_damping =  [damping_program(1.0,wn,surge)/wn for wn in omegas ] ./ ((2/3
 results_amass =  [added_mass_program(1.0,wn,surge) for wn in omegas ] ./ ((2/3)*pi*1*1023);
 
 # # Plotting results with respect to wavenumbers
-plot(K_surge,  results_damping, xlabel = "kR", ylabel = "B(kR)",
+plot(K_surge,  results_damping, xlabel = "kr", ylabel = "B(kr)",
      label = "new solver", marker = :circle, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
 
-plot!(K_surge, B_surge, xlabel = "kR",
+plot!(K_surge, B_surge, xlabel = "kr",
      label = "analytical", marker = :circle, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen, linestyle=:dot )
 
 savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/Surge_HemisphereCoefficientComparison_damping.pdf")
 
-plot(K_surge,  results_amass, xlabel = "kR",ylabel = "A(kR)",
+plot(K_surge,  results_amass, xlabel = "kr",ylabel = "A(kr)",
      label = "new solver", marker = :diamond, linewidth = 2,linecolor = vermillion,markercolor = vermillion)
 
-plot!(K_surge, A_surge, xlabel = "kR", 
+plot!(K_surge, A_surge, xlabel = "kr", 
      label = "analytical", marker = :diamond, linewidth = 2,linecolor = bluishgreen,markercolor = bluishgreen , linestyle=:dot )
 
 savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/Surge_HemisphereCoefficientComparison_amass.pdf")
@@ -111,7 +111,7 @@ julia_diff_omega = [diffraction_program(w, r, heave) for w in omegas] ./ non_dim
 plot(K_heave_diff, abs.(Diff_heave), marker=:circle, label="capytaine", color=bluishgreen, linestyle=:dash)
 plot!(K_heave_diff, abs.(julia_diff_omega), marker=:square, label="new solver", color=vermillion, linestyle=:solid)
 
-xlabel!("kR")
+xlabel!("kr")
 ylabel!("Diffraction Force")
 plot!(legend=:topright, grid=true)
 
@@ -131,7 +131,7 @@ julia_froude_omega = [froudeKrylovProgram(r, w,heave) for w in omegas] ./ non_di
 plot(K_heave_diff, abs.(Froude_heave), marker=:circle, label="capytaine", color=bluishgreen, linestyle=:dash)
 plot!(K_heave_diff, abs.(julia_froude_omega), marker=:square, label="new solver", color=vermillion, linestyle=:solid)
 
-xlabel!("kR")
+xlabel!("kr")
 ylabel!("Froude Krylov Force")
 plot!(legend=:topright, grid=true)
 savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/froudeKrylov_comparison.pdf")
