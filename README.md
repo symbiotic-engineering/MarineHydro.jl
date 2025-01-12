@@ -68,6 +68,7 @@ Fully-differentiable boundary element solver for marine hydrodynamics. This new 
    Pkg.activate(".")
    Pkg.instantiate()
    ```
+   You may need to configure PyCall. Note: Running `tests/` automatically install capytaine and uses it. 
 4. **Configure PyCall**
    ```
    ENV["PYTHON"] = "/path/to/capytaine_env/bin/python" # run 'which python' in your terminal for this
