@@ -24,10 +24,10 @@ function gradient_greens end
 function integral end
 function integral_gradient end
 
-∑ = sum
-τ̅ = 2π
+const ∑ = sum
+const τ̅ = 2π
 #τ = 2.0unit_π
-PointNonDim = AbstractVector{<:Real}
+const PointNonDim = AbstractVector{<:Real}
 
 include("Meshes.jl") #capytaine one
 include("green_functions/rankine.jl")
