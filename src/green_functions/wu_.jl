@@ -31,20 +31,26 @@ function gradient_greens(::GFWu, element_1, element_2, wavenumber; with_respect_
     dGF_dvv = -GF_Func_L0(vv, dd, alpha, beta, rho) - GF_Func_W(hh, vv) + 2/dd
     if with_respect_to_first_variable
         if abs(hh) > 1e-6
-            dhh_dx = wavenumber^2 / hh * [x[1] - xi[1], x[2] - xi[2]]
+            dhh_dx1 = wavenumber^2 / hh * (x[1] - xi[1])
+            dhh_dx2 = wavenumber^2 / hh * (x[2] - xi[2])
         else
-            dhh_dx = [zero(hh), zero(hh)]
+            dhh_dx1 = zero(x[1])
+            dhh_dx2 = zero(x[2])
         end
         dvv_dx = wavenumber
-        return wavenumber * [dhh_dx * dGF_dhh; dvv_dx * dGF_dvv]
+        return wavenumber * (zero(x) .+ (dhh_dx1 * dGF_dhh, dhh_dx2 * dGF_dhh, dvv_dx * dGF_dvv))
+        # The zero(x) is a workaround to convert the following tuple to the same type as `x` (either Vector or SVector).
     else
         if abs(hh) > 1e-6
-            dhh_dxi = wavenumber^2 / hh * [xi[1] - x[1], xi[2] - x[2]]
+            dhh_dxi1 = wavenumber^2 / hh * (xi[1] - x[1])
+            dhh_dxi2 = wavenumber^2 / hh * (xi[2] - x[2])
         else
-            dhh_dxi = [zero(hh), zero(hh)]
+            dhh_dxi1 = zero(x[1])
+            dhh_dxi2 = zero(x[2])
         end
         dvv_dxi = wavenumber
-        return wavenumber * [dhh_dxi * dGF_dhh; dvv_dxi * dGF_dvv]
+        return wavenumber * (zero(x) .+ (dhh_dxi1 * dGF_dhh, dhh_dxi2 * dGF_dhh, dvv_dxi * dGF_dvv))
+        # The zero(x) is a workaround to convert the following tuple to the same type as `x` (either Vector or SVector).
     end
 end
 

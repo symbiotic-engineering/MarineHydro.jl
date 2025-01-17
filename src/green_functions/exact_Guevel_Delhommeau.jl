@@ -57,22 +57,30 @@ function gradient_greens(::ExactGuevelDelhommeau, element_1, element_2, wavenumb
     xi = element_2.center
     r  = wavenumber * hypot(x[1] - xi[1], x[2] - xi[2])
     z  = wavenumber * (x[3] + xi[3])
+    dGF_dr = _d_dimless_wave_term_dr(r, z)
+    dGF_dz = _d_dimless_wave_term_dz(r, z)
     if with_respect_to_first_variable
         if abs(r) > 1e-6
-            dr_dx = wavenumber^2 / r * [x[1] - xi[1], x[2] - xi[2]]
+            dr_dx1 = wavenumber^2 / r * (x[1] - xi[1])
+            dr_dx2 = wavenumber^2 / r * (x[2] - xi[2])
         else
-            dr_dx = [0.0, 0.0]
+            dr_dx1 = zero(x[1])
+            dr_dx2 = zero(x[2])
         end
         dz_dx = wavenumber
-        return wavenumber * [dr_dx * _d_dimless_wave_term_dr(r, z); dz_dx * _d_dimless_wave_term_dz(r, z)]
+        return wavenumber * (zero(x) .+ (dr_dx1 * dGF_dr, dr_dx2 * dGF_dr, dz_dx * dGF_dz))
+        # The zero(x) is a workaround to convert the following tuple to the same type as `x` (either Vector or SVector).
     else
         if abs(r) > 1e-6
-            dr_dxi = wavenumber^2 / r * [xi[1] - x[1], xi[2] - x[2]]
+            dr_dxi1 = wavenumber^2 / r * (xi[1] - x[1])
+            dr_dxi2 = wavenumber^2 / r * (xi[2] - x[2])
         else
-            dr_dxi = [0.0, 0.0]
+            dr_dxi1 = zero(x[1])
+            dr_dxi2 = zero(x[2])
         end
         dz_dxi = wavenumber
-        return wavenumber * [dr_dxi * _d_dimless_wave_term_dr(r, z); dz_dxi * _d_dimless_wave_term_dz(r, z)]
+        return wavenumber * (zero(x) .+ (dr_dxi1 * dGF_dr, dr_dxi2 * dGF_dr, dz_dxi * dGF_dz))
+        # The zero(x) is a workaround to convert the following tuple to the same type as `x` (either Vector or SVector).
     end
 end
 
