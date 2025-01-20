@@ -69,10 +69,7 @@ Calculates the integral of the gradient of Green's function over a panel.
 """
 function integral_gradient end
 
-∑ = sum
-τ̅ = 2π
-#τ = 2.0unit_π
-PointNonDim = AbstractVector{<:Real}
+const τ̅ = 2π
 
 include("Meshes.jl") #capytaine one
 include("green_functions/rankine.jl")
