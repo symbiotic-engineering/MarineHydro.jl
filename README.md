@@ -42,7 +42,7 @@ Fully-differentiable boundary element solver for marine hydrodynamics. This new 
   Includes plots and data generated for the paper.
 
 - **📜 src**  
-  Source code files for the `MarineHydro.jl` package, including the main functionality.
+  Source code files for the `BEM.jl` package, including the main functionality.
 
 - **🧪 test**  
   Contains test files and resources to verify the functionality of the source code.
@@ -74,10 +74,10 @@ Fully-differentiable boundary element solver for marine hydrodynamics. This new 
    ENV["PYTHON"] = "/path/to/capytaine_env/bin/python" # run 'which python' in your terminal for this
    ```
   
-6. **Using the MarineHydro Module**  
+6. **Using the BEM Module**  
 Load the module in your Julia session:  
 ```julia
-using MarineHydro
+using BEM
 using PyCall
 # import your capytaine mesh
 cpt = pyimport("capytaine")

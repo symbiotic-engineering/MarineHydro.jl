@@ -1,5 +1,5 @@
 using Test
-using MarineHydro
+using BEM
 
 @testset "Green function" begin
 
@@ -31,7 +31,7 @@ using MarineHydro
         end
 
         @testset "Alternative definitions of the reflected Rankine" begin
-            import MarineHydro.free_surface_symmetry
+            import BEM.free_surface_symmetry
 
             @test greens(Rankine(), free_surface_symmetry(e1), e2) ≈ greens(Rankine(), e1, free_surface_symmetry(e2))
             @test gradient_greens(Rankine(), free_surface_symmetry(e1), e2, with_respect_to_first_variable=true) ≈ vertical_reflection(gradient_greens(Rankine(), e1, free_surface_symmetry(e2), with_respect_to_first_variable=true))
@@ -54,7 +54,7 @@ using MarineHydro
 
     @testset "Guével-Delhommeau" begin
 
-        import MarineHydro._dimless_wave_term, MarineHydro._d_dimless_wave_term_dr
+        import BEM._dimless_wave_term, BEM._d_dimless_wave_term_dr
         # From cpt.Delhommeau().fortran_core.delhommeau_integrals.numerical_integration(1.0, -1.0, 1000)
         capy_ref = [-1.84003542, 1.76871985, -0.59117747, -1.01715699]
         @test _dimless_wave_term(1.0, -1.0) ≈ capy_ref[1] + im*capy_ref[2] atol=1e-4
