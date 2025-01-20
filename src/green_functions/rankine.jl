@@ -6,37 +6,11 @@ _distance(x̅::PointNonDim, ξ̅::PointNonDim) = √∑((x̅ .- ξ̅) .^ 2)
 # It is just part of the signature to have the same signature than the wave part of the Green function.
 
 function greens(::Rankine, element_1, element_2, wavenumber=nothing)
-    """
-        greens(::Rankine, element_1, element_2, wavenumber=nothing)
-
-    Calculates the Green's function between two panels on a floating body.
-
-    # Arguments
-    - `element_1`: first panel .
-    - `element_2`: second panel.
-    - `wavenumber`: The wavenumber (optional, default is `nothing`). If provided, this parameter defines the wavenumber for waves.
-    # Returns
-    - The Rankine Green's function value between the two specified panels, which represents the influence of one panel on the other.
-    """
     r = _distance(element_1[:center], element_2[:center])
     return 1 / r
 end
 
 function gradient_greens(::Rankine, element_1, element_2, wavenumber=nothing; with_respect_to_first_variable=false)
-    """
-    gradient_greens(::Rankine, element_1, element_2, wavenumber=nothing; with_respect_to_first_variable=false)
-
-    Calculates the gradient of the Rankine Green's function between two panels on a floating body, integrating the influence of one panel on the other.
-
-    # Arguments
-    - `element_1`: First panel.
-    - `element_2`: Second panel.
-    - `wavenumber`: The wavenumber (optional, default is `nothing`). Defines the wavenumber for waves ~~~~~
-    - `with_respect_to_first_variable`: A boolean flag (default is `false`). If `true`, computes the gradient with respect to `element_1`; otherwise, computes the gradient with respect to `element_2`.
-
-    # Returns
-    - The gradient of the Rankine Green's function, representing the influence of one panel on the other, integrated over the panels, with respect to the panel. This is different for direct and indirect BEM
-"""
 
     r = _distance(element_1[:center], element_2[:center])
     r̅ = element_2[:center] - element_1[:center]
