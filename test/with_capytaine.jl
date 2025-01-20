@@ -1,4 +1,4 @@
-using BEM
+using MarineHydro
 using Test
 using PyCall
 

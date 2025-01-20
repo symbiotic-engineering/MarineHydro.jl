@@ -1,6 +1,6 @@
 using Test
 using Zygote
-using BEM
+using MarineHydro
 using PyCall
 using LinearAlgebra
 using ImplicitAD

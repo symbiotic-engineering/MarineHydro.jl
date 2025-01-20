@@ -1,5 +1,5 @@
 
-module BEM
+module MarineHydro
 
 export greens, gradient_greens, integral, integral_gradient, solve,calculate_radiation_forces
 export Mesh, element, integrate_pressure, DiffractionForce,assemble_matrix_wu

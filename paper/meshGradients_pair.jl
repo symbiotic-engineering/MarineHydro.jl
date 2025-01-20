@@ -209,7 +209,7 @@ function ChainRulesCore.rrule(::typeof(sphere_faces), r,dx1)
     return Mesh(vertices,faces,centers,normals,areas,radii,nvertices,nfaces) #
 end
 
-using BEM
+using MarineHydro
   #test differentiability
 function func(r1,dx1)
     mesh = differentiableMeshPairs(r1,dx1)
