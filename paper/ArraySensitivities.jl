@@ -1,7 +1,7 @@
 using Plots
 using CSV
 using DataFrames
-using BEM
+using MarineHydro
 include("/home/cornell/BEMJulia/BEM.jl/paper/meshGradients_pair.jl")
  #takes a while depending on this - some faces_max_radius gives weird answer
 #check meshes.jl to change faces_max_radius.
@@ -23,7 +23,7 @@ function added_mass_off_diagonal(radius,omega ,dx1)
     sphere_2_heave_normal = [element_is_in_sphere_2(j) ? mesh.normals[j,:]' * [0.0, 0.0, 1.0] : 0.0 for j in 1:total_nfaces]
     k = omega^2 / 9.81  # Wave number
     S, D = assemble_matrices((Rankine(), RankineReflected(), GFWu()), mesh, k)
-    potential = BEM.solve(D, S, -1im * omega * sphere_1_heave_normal)
+    potential = MarineHydro.solve(D, S, -1im * omega * sphere_1_heave_normal)
     pressure = 1im * 1000 * omega * potential
     # force = -sum(pressure .* sphere_2_heave_normal .* mesh.areas)
     # A12 = real(force) / omega^2
@@ -41,7 +41,7 @@ function damping_off_diagonal(radius,omega ,dx1)
     sphere_2_heave_normal = [element_is_in_sphere_2(j) ? mesh.normals[j,:]' * [0.0, 0.0, 1.0] : 0.0 for j in 1:total_nfaces]
     k = omega^2 / 9.81  # Wave number
     S, D = assemble_matrices((Rankine(), RankineReflected(), GFWu()), mesh, k) # Assemble matrices tuple error -- use default
-    potential = BEM.solve(D, S, -1im * omega * sphere_1_heave_normal)
+    potential = MarineHydro.solve(D, S, -1im * omega * sphere_1_heave_normal)
     pressure = 1im * 1000 * omega * potential
     force = -sum(pressure .* sphere_1_heave_normal .* mesh.areas)
     B11 = imag(force) / omega

@@ -1,4 +1,4 @@
-using BEM
+using MarineHydro
 using Zygote
 using FiniteDifferences
 using Test

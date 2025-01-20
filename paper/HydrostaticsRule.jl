@@ -1,6 +1,6 @@
 using Zygote
 using ChainRulesCore
-using BEM 
+using MarineHydro 
 cpt = pyimport("capytaine")
 
 ∂J_r_fd_hs(f,r; h=1e-5) = (f(r+h) .- f(r-h)) ./ (2*h)

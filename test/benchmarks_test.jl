@@ -1,5 +1,5 @@
 using BenchmarkTools
-using BEM 
+using MarineHydro 
 using PyCall
 using Zygote
 
@@ -8,7 +8,7 @@ radius = 1.0
 resolution = (6, 6) #smaller data just to test
 cptmesh = cpt.mesh_sphere(name="sphere", radius=radius, center=(0, 0, 0), resolution=resolution)
 cptmesh.keep_immersed_part(inplace=true)
-mesh = BEM.Mesh(cptmesh)
+mesh = MarineHydro.Mesh(cptmesh)
 npanels = mesh.nfaces
 println( "Mesh information $resolution with  panels $npanels")
 omega = 1.12
