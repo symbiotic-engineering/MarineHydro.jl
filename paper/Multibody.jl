@@ -1,4 +1,4 @@
-using BEM
+using MarineHydro
 using PyCall
 using LinearAlgebra
 
@@ -33,7 +33,7 @@ Am = zeros((2, 2))
 Bm = zeros((2, 2))
 
 # radiation of first sphere
-potential = BEM.solve(D, S, -1im * omega * sphere_1_heave_normal)
+potential = MarineHydro.solve(D, S, -1im * omega * sphere_1_heave_normal)
 pressure = 1im * 1000 * omega * potential 
 force_on_sphere_1 = -sum(pressure .* sphere_1_heave_normal .* mesh.areas)
 A11 = real(force_on_sphere_1)/omega^2
@@ -44,7 +44,7 @@ B12 = imag(force_on_sphere_2)/omega
 Am = [A11 A12; A12 A11]
 Bm = [B11 B12; B12 B11]
 # # radiation of second sphere (very symmetric here, but that is just for demonstration)
-# potential = BEM.solve(D, S, -1im * omega * sphere_2_heave_normal)
+# potential = MarineHydro.solve(D, S, -1im * omega * sphere_2_heave_normal)
 # pressure = 1im * 1000 * omega * potential 
 # force_on_sphere_1 = -sum(pressure .* sphere_1_heave_normal .* mesh.areas)
 # Am[2, 1] = real(force_on_sphere_1)/omega^2

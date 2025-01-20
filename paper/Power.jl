@@ -4,7 +4,7 @@ using ForwardDiff
 using Zygote, ChainRulesCore 
 ForwardDiff.can_dual(::Type{Any}) = true
 using LinearAlgebra
-using BEM
+using MarineHydro
 using ImplicitAD
 include("/home/cornell/BEMJulia/MarineHydro.jl/paper/meshGradients_pair.jl")
 include("/home/cornell/BEMJulia/MarineHydro.jl/paper/HydrostaticsRule.jl")
@@ -38,7 +38,7 @@ function power(r1,dx1)
     # sphere_2_center = hcat(sphere_2_center'...)
 
     # radiation of first sphere
-    potential = BEM.solve(D, S, -1im * omega * sphere_1_heave_normal)
+    potential = MarineHydro.solve(D, S, -1im * omega * sphere_1_heave_normal)
     pressure = 1im * 1000 * omega * potential 
     force_on_sphere_1 = -sum(pressure .* sphere_1_heave_normal .* mesh.areas)
     A11 = real(force_on_sphere_1)/omega^2

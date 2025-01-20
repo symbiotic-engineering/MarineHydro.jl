@@ -1,6 +1,6 @@
 ## COEFFICIENTS CHECKS - DO NOT DELETE even if commented out; MAKE TEST
 using LinearAlgebra,Statistics,Plots
-using BEM
+using MarineHydro
 using ColorTypes
 include("MeshGradients_singlebody.jl")
 include("HulmeData.jl")
