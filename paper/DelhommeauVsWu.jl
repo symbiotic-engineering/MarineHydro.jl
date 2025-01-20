@@ -1,4 +1,4 @@
-using PyCall, MarineHydro, Zygote, Plots, ColorTypes
+using PyCall, BEM, Zygote, Plots, ColorTypes
 
 orange = RGB(230/255,159/255,0/255)  
 vermillion = RGB(213/255, 94/255, 0/255) 
@@ -63,7 +63,7 @@ xlabel!("k")
 ylabel!("Gradient")
 title!("Comparison of Gradients: Wu vs Delhommeau")
 legend()
-savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/added_mass_del_wu.pdf")
+savefig("/home/cornell/BEMJulia/BEM.jl/paper/Plots/added_mass_del_wu.pdf")
 
 plot(k_range, A_w_gradwu, label="A_w_gradwu", lw=2, linestyle=:dash, color=vermillion)
 plot!(k_range, A_w_graddel, label="A_w_graddel", lw=2, linestyle=:solid, color=bluishgreen)
@@ -71,4 +71,4 @@ xlabel!("k")
 ylabel!("Gradient")
 title!("Comparison of Gradients: Wu vs Delhommeau")
 legend()
-savefig("/home/cornell/BEMJulia/MarineHydro.jl/paper/Plots/gradw_added_mass_del_wu.pdf")
+savefig("/home/cornell/BEMJulia/BEM.jl/paper/Plots/gradw_added_mass_del_wu.pdf")

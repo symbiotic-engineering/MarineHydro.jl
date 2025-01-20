@@ -1,4 +1,4 @@
-using MarineHydro
+using BEM
 using BenchmarkTools
 include("BemProgram.jl")
 include("MeshGradients_singlebody.jl")
@@ -24,21 +24,21 @@ element_2 = (
 
 function integral_and_gradient(GF, element_1, element_2, wavenumber=nothing)
     return (
-        MarineHydro.integral(GF, element_1, element_2, wavenumber),
-        MarineHydro.integral_gradient(GF, element_1, element_2, wavenumber)
+        BEM.integral(GF, element_1, element_2, wavenumber),
+        BEM.integral_gradient(GF, element_1, element_2, wavenumber)
     )
 end
 omega = 1.03
 
 println("Rankine")
-@btime MarineHydro.integral($(Rankine()), $element_1, $element_2)
-@btime MarineHydro.integral_gradient($(Rankine()), $element_1, $element_2)
+@btime BEM.integral($(Rankine()), $element_1, $element_2)
+@btime BEM.integral_gradient($(Rankine()), $element_1, $element_2)
 @btime integral_and_gradient($(Rankine()), $element_1, $element_2)
 
 wavenumber = 1.0
 println("GFWu")
-@btime MarineHydro.integral($(GFWu()), $element_1, $element_2, $wavenumber)
-@btime MarineHydro.integral_gradient($(GFWu()), $element_1, $element_2, $wavenumber)
+@btime BEM.integral($(GFWu()), $element_1, $element_2, $wavenumber)
+@btime BEM.integral_gradient($(GFWu()), $element_1, $element_2, $wavenumber)
 @btime integral_and_gradient($(GFWu()), $element_1, $element_2, $wavenumber)
 
 
