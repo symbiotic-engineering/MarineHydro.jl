@@ -33,7 +33,7 @@ function integral(::Rankine, element_1, element_2, wavenumber=nothing)
     if r > 7 * source_radius # if far -> Rankine Direct
         integral = source_area / r
     else  # else (if close) deal with singularity
-        integral = 0.0
+        integral = zero(source_area)
         GZ = dot(r̄, source_normal)
         RR = ntuple(i -> _distance(point, source_vertices[i,:]), 4)
         for index_vertex in 1:4
@@ -97,7 +97,7 @@ function integral_gradient(::Rankine, element_1, element_2, wavenumber=nothing; 
                 if abs(GZ) >= 1e-4 * source_radius
                     AT = atan(ANT, DNT)  #check difference
                 else
-                    AT = 0.0
+                    AT = zero(ANT)
                 end
                 #error bound error in the line below...
                 ANLX = DRX[index_next_vertex] + DRX[index_vertex]
