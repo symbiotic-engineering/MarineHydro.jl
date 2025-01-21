@@ -964,8 +964,8 @@ version = "0.5.15"
 [[deps.MarineHydro]]
 deps = ["BenchmarkTools", "CSV", "ChainRulesCore", "ColorTypes", "DataFrames", "DimensionfulAngles", "FastGaussQuadrature", "FiniteDiff", "FiniteDifferences", "ForwardDiff", "ImplicitAD", "Integrals", "LaTeXStrings", "LinearAlgebra", "Optim", "PyCall", "QuadGK", "Revise", "SpecialFunctions", "StaticArrays", "Zygote"]
 git-tree-sha1 = "588222aca9dd84e965062f4748aa7f4d965d52ae"
-repo-rev = "main"
-repo-url = ".."
+repo-rev = "8d368b01ce48baeffd0d1982b54bcfb0256b88d1"
+repo-url = "https://github.com/symbiotic-engineering/MarineHydro.jl"
 uuid = "8d7a907f-d253-4c14-a318-41dd3f310a02"
 version = "0.1.0"
 
