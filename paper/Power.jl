@@ -6,8 +6,8 @@ ForwardDiff.can_dual(::Type{Any}) = true
 using LinearAlgebra
 using MarineHydro
 using ImplicitAD
-include("/home/cornell/BEMJulia/MarineHydro.jl/paper/meshGradients_pair.jl")
-include("/home/cornell/BEMJulia/MarineHydro.jl/paper/HydrostaticsRule.jl")
+include("./meshGradients_pair.jl")
+include("./HydrostaticsRule.jl")
 cpt = pyimport("capytaine")
 
 function power(r1,dx1)

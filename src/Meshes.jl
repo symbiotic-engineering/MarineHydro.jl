@@ -1,4 +1,3 @@
-using Zygote
 using PyCall
 struct Mesh
     vertices::AbstractMatrix

@@ -14,7 +14,7 @@ using LinearAlgebra: cross, diagm, dot, norm
 using SpecialFunctions: besselj0, besselj1, bessely0, bessely1
 using LinearAlgebra
 using .MathConstants: γ
-using ImplicitAD
+using ImplicitAD: implicit_linear
 
 
 abstract type GreensFunction end

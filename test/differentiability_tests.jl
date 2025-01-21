@@ -3,8 +3,6 @@ using Zygote
 using MarineHydro
 using PyCall
 using LinearAlgebra
-using ImplicitAD
-using ChainRulesCore
 
 @testset "Green Function Differentiability Tests" begin
     # Define elements

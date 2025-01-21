@@ -10,7 +10,7 @@ vermillion = RGB(213/255, 94/255, 0/255)
 bluishgreen = RGB(0/255, 158/255, 115/255)  
 
 
-include("/home/cornell/BEMJulia/MarineHydro.jl/paper/Power.jl")
+include("./Power.jl")
 
 function objective(x)
     p = -1*power(x[1], x[2])
