@@ -3,8 +3,6 @@ using Zygote
 using MarineHydro
 using PyCall
 using LinearAlgebra
-using ImplicitAD
-using ChainRulesCore
 
 
 @testset "Gradient accuracy check with Finite diff [w.r.t omega]" begin

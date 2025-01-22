@@ -2,7 +2,7 @@ using Plots
 using CSV
 using DataFrames
 using MarineHydro
-include("/home/cornell/BEMJulia/BEM.jl/paper/meshGradients_pair.jl")
+include("./meshGradients_pair.jl")
  #takes a while depending on this - some faces_max_radius gives weird answer
 #check meshes.jl to change faces_max_radius.
 radius_range = [1,2,3,4,5]
