@@ -45,7 +45,7 @@ Assembles the influence matrices based on the tuple of provided Green's function
 """
 function assemble_matrices(green_functions, mesh, wavenumber; direct=true)
     # Use comprehensions to build S and D matrices
-    S = @inbounds [sum(-1/2τ̅ * Complex(integral(gf, element(mesh, i), element(mesh, j), wavenumber)) for gf in green_functions) for i in 1:mesh.nfaces, j in 1:mesh.nfaces]
+    S = @inbounds [-1/2τ̅ * Complex(integral(green_functions, element(mesh, i), element(mesh, j), wavenumber)) for i in 1:mesh.nfaces, j in 1:mesh.nfaces]
     
     D = @inbounds [begin
             element_i = element(mesh, i)
@@ -54,7 +54,7 @@ function assemble_matrices(green_functions, mesh, wavenumber; direct=true)
             # Select the normal based on direct flag
             normal = direct ? element_j.normal : element_i.normal
 
-            sum(-1/2τ̅ * Complex(normal' * integral_gradient(gf, element_i, element_j, wavenumber; with_respect_to_first_variable=!direct)) for gf in green_functions)
+            -1/2τ̅ * Complex(normal' * integral_gradient(green_functions, element_i, element_j, wavenumber; with_respect_to_first_variable=!direct))
         end for i in 1:mesh.nfaces, j in 1:mesh.nfaces]
 
     # Add diagonal elements to D
