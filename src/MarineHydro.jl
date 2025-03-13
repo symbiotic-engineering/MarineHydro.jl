@@ -52,9 +52,9 @@ function assemble_matrices(green_functions, mesh, wavenumber; direct=true)
             element_j = element(mesh, j)
 
             # Select the normal based on direct flag
-            normal = direct ? element_j.normal : element_i.normal
+            n = direct ? normal(element_j) : normal(element_i)
 
-            -1/2τ̅ * Complex(normal' * integral_gradient(green_functions, element_i, element_j, wavenumber; with_respect_to_first_variable=!direct))
+            -1/2τ̅ * Complex(n' * integral_gradient(green_functions, element_i, element_j, wavenumber; with_respect_to_first_variable=!direct))
         end for i in 1:mesh.nfaces, j in 1:mesh.nfaces]
 
     # Add diagonal elements to D

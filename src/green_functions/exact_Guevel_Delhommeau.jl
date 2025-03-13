@@ -26,8 +26,8 @@ function _dimless_wave_term(r, z)
 end
 
 function greens(::ExactGuevelDelhommeau, element_1, element_2, wavenumber)
-    x  = element_1.center
-    xi = element_2.center
+    x  = center(element_1)
+    xi = center(element_2)
     r  = wavenumber * hypot(x[1] - xi[1], x[2] - xi[2])
     z  = wavenumber * (x[3] + xi[3])
     return wavenumber * _dimless_wave_term(r, z)
@@ -53,8 +53,8 @@ function _d_dimless_wave_term_dz(r, z)
 end
 
 function gradient_greens(::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
-    x = element_1.center
-    xi = element_2.center
+    x = center(element_1)
+    xi = center(element_2)
     r  = wavenumber * hypot(x[1] - xi[1], x[2] - xi[2])
     z  = wavenumber * (x[3] + xi[3])
     dGF_dr = _d_dimless_wave_term_dr(r, z)
@@ -86,10 +86,10 @@ end
 
 function integral(g::ExactGuevelDelhommeau, element_1, element_2, wavenumber)
     # One-point approximation of the integral
-    return greens(g, element_1, element_2, wavenumber) * element_2.area
+    return greens(g, element_1, element_2, wavenumber) * area(element_2)
 end
 
 function integral_gradient(g::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
     # One-point approximation of the integral
-    return gradient_greens(g, element_1, element_2, wavenumber; with_respect_to_first_variable) * element_2.area
+    return gradient_greens(g, element_1, element_2, wavenumber; with_respect_to_first_variable) * area(element_2)
 end

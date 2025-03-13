@@ -37,7 +37,7 @@ function Mesh(mesh::PyObject)
 end
 
 
-  function element(mesh::Mesh, J::Int)
+function element(mesh::Mesh, J::Int)
     return (
         center = mesh.centers[J, :],
         vertices = mesh.vertices[mesh.faces[J, :] .+ 1, :],
@@ -47,4 +47,11 @@ end
         faces = mesh.faces[J, :] .+ 1
     )
 end
+
+center(nt::NamedTuple) = nt[:center]
+vertices(nt::NamedTuple) = nt[:vertices]
+radius(nt::NamedTuple) = nt[:radius]
+normal(nt::NamedTuple) = nt[:normal]
+area(nt::NamedTuple) = nt[:area]
+faces(nt::NamedTuple) = nt[:faces]
 
