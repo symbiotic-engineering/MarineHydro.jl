@@ -45,11 +45,11 @@ Assembles the influence matrices based on the tuple of provided Green's function
 """
 function assemble_matrices(green_functions, mesh, wavenumber; direct=true)
     # Use comprehensions to build S and D matrices
-    S = @inbounds [-1/2τ̅ * Complex(integral(green_functions, element(mesh, i), element(mesh, j), wavenumber)) for i in 1:mesh.nfaces, j in 1:mesh.nfaces]
-    
+    S = @inbounds [-1/2τ̅ * Complex(integral(green_functions, LazyElement(mesh, i), LazyElement(mesh, j), wavenumber)) for i in 1:mesh.nfaces, j in 1:mesh.nfaces]
+
     D = @inbounds [begin
-            element_i = element(mesh, i)
-            element_j = element(mesh, j)
+            element_i = LazyElement(mesh, i)
+            element_j = LazyElement(mesh, j)
 
             # Select the normal based on direct flag
             n = direct ? normal(element_j) : normal(element_i)
