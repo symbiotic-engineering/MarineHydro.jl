@@ -6,13 +6,13 @@ _distance(x, ξ) = norm(x .- ξ)
 # It is just part of the signature to have the same signature than the wave part of the Green function.
 
 function greens(::Rankine, element_1, element_2, wavenumber=nothing)
-    r = _distance(element_1[:center], element_2[:center])
+    r = _distance(center(element_1), center(element_2))
     return 1 / r
 end
 
 function gradient_greens(::Rankine, element_1, element_2, wavenumber=nothing; with_respect_to_first_variable=false)
-    r = _distance(element_1[:center], element_2[:center])
-    r̅ = element_2[:center] - element_1[:center]
+    r = _distance(center(element_1), center(element_2))
+    r̅ = center(element_2) - center(element_1)
     ∇ₓ = 1/r^3*r̅
     if with_respect_to_first_variable
         return ∇ₓ
@@ -22,12 +22,12 @@ function gradient_greens(::Rankine, element_1, element_2, wavenumber=nothing; wi
 end
 
 function integral(::Rankine, element_1, element_2, wavenumber=nothing)
-    point = element_1[:center]
-    source_point = element_2[:center]
-    source_vertices = element_2[:vertices]
-    source_radius = element_2[:radius]
-    source_normal = element_2[:normal]
-    source_area = element_2[:area]
+    point = center(element_1)
+    source_point = center(element_2)
+    source_vertices = vertices(element_2)
+    source_radius = radius(element_2)
+    source_normal = normal(element_2)
+    source_area = area(element_2)
     r̄ = point - source_point
     r = norm(r̄)
     if r > 7 * source_radius # if far -> Rankine Direct
@@ -63,12 +63,12 @@ function integral(::Rankine, element_1, element_2, wavenumber=nothing)
 end
 
 function integral_gradient(::Rankine, element_1, element_2, wavenumber=nothing; with_respect_to_first_variable=false)
-    point = element_1[:center]
-    source_point = element_2[:center]
-    source_vertices = element_2[:vertices]
-    source_normal = element_2[:normal]
-    source_radius = element_2[:radius]
-    source_area = element_2[:area]
+    point = center(element_1)
+    source_point = center(element_2)
+    source_vertices = vertices(element_2)
+    source_normal = normal(element_2)
+    source_radius = radius(element_2)
+    source_area = area(element_2)
     r̄ = point - source_point
     r = norm(r̄)
     if r > 7 * source_radius # if far -> Rankine Direct

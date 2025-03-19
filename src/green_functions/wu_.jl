@@ -1,8 +1,8 @@
 struct GFWu <: GreensFunction end
 
 function greens(::GFWu, element_1, element_2, wavenumber)
-    x  = element_1.center
-    xi = element_2.center
+    x  = center(element_1)
+    xi = center(element_2)
     hh = wavenumber * hypot(x[1] - xi[1], x[2] - xi[2])
     if hh==0.0
         hh = hh + 1e-18
@@ -16,8 +16,8 @@ function greens(::GFWu, element_1, element_2, wavenumber)
 end
 
 function gradient_greens(::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
-    x = element_1.center
-    xi = element_2.center
+    x = center(element_1)
+    xi = center(element_2)
     hh = wavenumber * hypot(x[1] - xi[1], x[2] - xi[2])
     if hh==0.0
         hh = hh + 1e-18
@@ -56,12 +56,12 @@ end
 
 function integral(g::GFWu, element_1, element_2, wavenumber)
     # One-point approximation of the integral
-    return greens(g::GFWu, element_1, element_2, wavenumber) * element_2.area
+    return greens(g::GFWu, element_1, element_2, wavenumber) * area(element_2)
 end
 
 function integral_gradient(g::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
     # One-point approximation of the integral
-    return gradient_greens(g::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable) * element_2.area
+    return gradient_greens(g::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable) * area(element_2)
 end
 
 ######################################################
