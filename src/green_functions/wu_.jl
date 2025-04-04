@@ -1,56 +1,24 @@
 struct GFWu <: GreensFunction end
 
 function greens(::GFWu, element_1, element_2, wavenumber)
-    x  = center(element_1)
-    xi = center(element_2)
-    hh = wavenumber * hypot(x[1] - xi[1], x[2] - xi[2])
-    if hh==0.0
-        hh = hh + 1e-18
+    with_reduced_coordinates(element_1, element_2, wavenumber) do hh, vv
+        dd = sqrt(hh * hh + vv * vv)
+        alpha = -vv / dd
+        beta = hh / dd
+        rho = dd / (1.0 + dd)
+        return -GF_Func_L0(vv, dd, alpha, beta, rho) - GF_Func_W(hh, vv)
     end
-    vv = wavenumber * (x[3] + xi[3])
-    dd = sqrt(hh * hh + vv * vv)
-    alpha = -vv / dd
-    beta = hh / dd
-    rho = dd / (1.0 + dd)
-    return wavenumber * (-GF_Func_L0(vv, dd, alpha, beta, rho) - GF_Func_W(hh, vv))
 end
 
 function gradient_greens(::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
-    x = center(element_1)
-    xi = center(element_2)
-    hh = wavenumber * hypot(x[1] - xi[1], x[2] - xi[2])
-    if hh==0.0
-        hh = hh + 1e-18
-    end
-    vv = wavenumber * (x[3] + xi[3])
-    dd = sqrt(hh * hh + vv * vv)
-    alpha = -vv / dd
-    beta = hh / dd
-    rho = dd / (1.0 + dd)
-    dGF_dhh = -GF_Func_Ls(hh, vv, dd, alpha, beta, rho) - GF_Func_Wh(hh, vv)
-    dGF_dvv = -GF_Func_L0(vv, dd, alpha, beta, rho) - GF_Func_W(hh, vv) + 2/dd
-    if with_respect_to_first_variable
-        if abs(hh) > 1e-6
-            dhh_dx1 = wavenumber^2 / hh * (x[1] - xi[1])
-            dhh_dx2 = wavenumber^2 / hh * (x[2] - xi[2])
-        else
-            dhh_dx1 = zero(x[1])
-            dhh_dx2 = zero(x[2])
-        end
-        dvv_dx = wavenumber
-        return wavenumber * (zero(x) .+ (dhh_dx1 * dGF_dhh, dhh_dx2 * dGF_dhh, dvv_dx * dGF_dvv))
-        # The zero(x) is a workaround to convert the following tuple to the same type as `x` (either Vector or SVector).
-    else
-        if abs(hh) > 1e-6
-            dhh_dxi1 = wavenumber^2 / hh * (xi[1] - x[1])
-            dhh_dxi2 = wavenumber^2 / hh * (xi[2] - x[2])
-        else
-            dhh_dxi1 = zero(x[1])
-            dhh_dxi2 = zero(x[2])
-        end
-        dvv_dxi = wavenumber
-        return wavenumber * (zero(x) .+ (dhh_dxi1 * dGF_dhh, dhh_dxi2 * dGF_dhh, dvv_dxi * dGF_dvv))
-        # The zero(x) is a workaround to convert the following tuple to the same type as `x` (either Vector or SVector).
+    with_reduced_coordinates_derivative(element_1, element_2, wavenumber; with_respect_to_first_variable) do hh, vv
+        dd = sqrt(hh * hh + vv * vv)
+        alpha = -vv / dd
+        beta = hh / dd
+        rho = dd / (1.0 + dd)
+        dGF_dhh = -GF_Func_Ls(hh, vv, dd, alpha, beta, rho) - GF_Func_Wh(hh, vv)
+        dGF_dvv = -GF_Func_L0(vv, dd, alpha, beta, rho) - GF_Func_W(hh, vv) + 2/dd
+        return dGF_dhh, dGF_dvv
     end
 end
 
@@ -308,4 +276,73 @@ function GF_Func_L0(vv, dd, alpha, beta, rho)
     GF_Func_L0 = 2.0 * PP / (1.0 + dd^3) + 2.0 * Lp
 
     return   GF_Func_L0
+end
+
+function StruveH0(xx)
+    if xx <= 3.0
+        yy = (xx / 3.0)^2
+        
+        P0 = +1.909859164
+        P1 = -1.909855001
+        P2 = +0.687514637
+        P3 = -0.126164557
+        P4 = +0.013828813
+        P5 = -0.000876918
+        
+        StruveH0 = P0 + (P1 + (P2 + (P3 + (P4 + P5 * yy) * yy) * yy) * yy) * yy
+        StruveH0 *= xx / 3.0
+    else
+        yy = (3.0 / xx)^2
+        
+        a0 = 0.99999906
+        a1 = 4.77228920
+        a2 = 3.85542044
+        a3 = 0.32303607
+
+        b1 = 4.88331068
+        b2 = 4.28957333
+        b3 = 0.52120508
+
+        c1 = 2.0 * (a0 + (a1 + (a2 + a3 * yy) * yy) * yy)
+        c2 = pi * xx * (1.0 + (b1 + (b2 + b3 * yy) * yy) * yy)
+        
+        StruveH0 = c1 / c2 + bessely0(xx)
+    end
+    
+    return StruveH0
+end
+
+
+
+function StruveH1(xx)
+    if xx <= 3.0
+        yy = (xx / 3.0)^2
+        
+        P1 = +1.909859286
+        P2 = -1.145914713
+        P3 = +0.294656958
+        P4 = -0.042070508
+        P5 = +0.003785727
+        P6 = -0.000207183
+      
+        StruveH1 = (P1 + (P2 + (P3 + (P4 + (P5 + P6 * yy) * yy) * yy) * yy) * yy) * yy
+    else
+        yy = (3.0 / xx)^2
+
+        a0 = 1.00000004
+        a1 = 3.92205313
+        a2 = 2.64893033
+        a3 = 0.27450895
+
+        b1 = 3.81095112
+        b2 = 2.26216956
+        b3 = 0.10885141
+
+        c1 = 2.0 * (a0 + (a1 + (a2 + a3 * yy) * yy) * yy)
+        c2 = pi * (1.0 + (b1 + (b2 + b3 * yy) * yy) * yy)
+
+        StruveH1 = c1 / c2 + bessely(1, xx)
+    end
+    
+    return StruveH1
 end
