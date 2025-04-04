@@ -33,3 +33,12 @@ function integral_gradient(::RankineReflected, element_1, element_2, wavenumber=
         return ng
     end
 end
+
+function both_integral_and_integral_gradient(::RankineReflected, element_1, element_2, wavenumber=nothing; with_respect_to_first_variable=false)
+    g, ng = both_integral_and_integral_gradient(Rankine(), free_surface_symmetry(element_1), element_2; with_respect_to_first_variable)
+    if with_respect_to_first_variable
+        return g, vertical_reflection(ng)
+    else
+        return g, ng
+    end
+end

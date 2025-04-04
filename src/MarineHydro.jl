@@ -24,7 +24,6 @@ include("green_functions/abstract_greens_function.jl")
 include("green_functions/rankine.jl")
 include("green_functions/rankine_reflected.jl")
 include("green_functions/rankine_reflected_negative.jl")
-include("green_functions/struve.jl")
 include("green_functions/wu_.jl")
 include("green_functions/exact_Guevel_Delhommeau.jl")
 
