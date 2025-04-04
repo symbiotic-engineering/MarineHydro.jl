@@ -45,9 +45,16 @@ function _d_dimless_wave_term_dr(r, z)
     return 4*integrate(integrand, 0, π/2,p)
 end
 
-function gradient_greens(::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
+function gradient_greens(gf::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
+    both_greens_and_gradient_greens(gf, element_1, element_2, wavenumber; with_respect_to_first_variable)[2]
+end
+
+function both_greens_and_gradient_greens(::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
     with_reduced_coordinates_derivative(element_1, element_2, wavenumber; with_respect_to_first_variable) do r, z
-        return _d_dimless_wave_term_dr(r, z), _dimless_wave_term(r, z) + 2/hypot(r, z)
+        dGF_dr = _d_dimless_wave_term_dr(r, z)
+        GF = _dimless_wave_term(r, z)
+        dGF_dz = GF + 2/hypot(r, z)
+        return GF, dGF_dr, dGF_dz 
     end
 end
 
@@ -59,4 +66,10 @@ end
 function integral_gradient(g::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
     # One-point approximation of the integral
     return gradient_greens(g, element_1, element_2, wavenumber; with_respect_to_first_variable) * area(element_2)
+end
+
+function both_integral_and_integral_gradient(g::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
+    # One-point approximation of the integral
+    GF, dGF = both_greens_and_gradient_greens(g::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable)
+    return GF * area(element_2), dGF * area(element_2)
 end

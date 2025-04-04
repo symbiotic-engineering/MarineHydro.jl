@@ -10,17 +10,23 @@ function greens(::GFWu, element_1, element_2, wavenumber)
     end
 end
 
-function gradient_greens(::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
+function gradient_greens(gf::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
+    both_greens_and_gradient_greens(gf, element_1, element_2, wavenumber; with_respect_to_first_variable)[2]
+end
+
+function both_greens_and_gradient_greens(g::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
     with_reduced_coordinates_derivative(element_1, element_2, wavenumber; with_respect_to_first_variable) do hh, vv
         dd = sqrt(hh * hh + vv * vv)
         alpha = -vv / dd
         beta = hh / dd
         rho = dd / (1.0 + dd)
         dGF_dhh = -GF_Func_Ls(hh, vv, dd, alpha, beta, rho) - GF_Func_Wh(hh, vv)
-        dGF_dvv = -GF_Func_L0(vv, dd, alpha, beta, rho) - GF_Func_W(hh, vv) + 2/dd
-        return dGF_dhh, dGF_dvv
+        GF = -GF_Func_L0(vv, dd, alpha, beta, rho) - GF_Func_W(hh, vv)
+        dGF_dvv = GF + 2/dd
+        return GF, dGF_dhh, dGF_dvv
     end
 end
+
 
 function integral(g::GFWu, element_1, element_2, wavenumber)
     # One-point approximation of the integral
@@ -30,6 +36,12 @@ end
 function integral_gradient(g::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
     # One-point approximation of the integral
     return gradient_greens(g::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable) * area(element_2)
+end
+
+function both_integral_and_integral_gradient(g::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
+    # One-point approximation of the integral
+    GF, dGF = both_greens_and_gradient_greens(g::GFWu, element_1, element_2, wavenumber; with_respect_to_first_variable)
+    return GF * area(element_2), dGF * area(element_2)
 end
 
 ######################################################

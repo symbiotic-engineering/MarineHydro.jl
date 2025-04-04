@@ -94,7 +94,7 @@ function with_reduced_coordinates(𝒢, element_1, element_2, wavenumber)
     return wavenumber * 𝒢(r, z)
 end
 
-function with_reduced_coordinates_derivative(d𝒢, element_1, element_2, wavenumber; with_respect_to_first_variable=true)
+function with_reduced_coordinates_derivative(d𝒢, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
     x  = center(element_1)
     xi = center(element_2)
     r  = wavenumber * hypot(x[1] - xi[1], x[2] - xi[2])
@@ -102,7 +102,7 @@ function with_reduced_coordinates_derivative(d𝒢, element_1, element_2, wavenu
         r = r + 1e-18
     end
     z  = wavenumber * (x[3] + xi[3])
-    dGF_dr, dGF_dz = d𝒢(r, z)
+    GF, dGF_dr, dGF_dz = d𝒢(r, z)
     if with_respect_to_first_variable
         if abs(r) > 1e-6
             dr_dx1 = wavenumber^2 / r * (x[1] - xi[1])
@@ -112,7 +112,7 @@ function with_reduced_coordinates_derivative(d𝒢, element_1, element_2, wavenu
             dr_dx2 = zero(x[2])
         end
         dz_dx = wavenumber
-        return wavenumber * (zero(x) .+ (dr_dx1 * dGF_dr, dr_dx2 * dGF_dr, dz_dx * dGF_dz))
+        return wavenumber * GF, wavenumber * (zero(x) .+ (dr_dx1 * dGF_dr, dr_dx2 * dGF_dr, dz_dx * dGF_dz))
         # The zero(x) is a workaround to convert the following tuple to the same type as `x` (either Vector or SVector).
     else
         if abs(r) > 1e-6
@@ -123,7 +123,7 @@ function with_reduced_coordinates_derivative(d𝒢, element_1, element_2, wavenu
             dr_dxi2 = zero(x[2])
         end
         dz_dxi = wavenumber
-        return wavenumber * (zero(x) .+ (dr_dxi1 * dGF_dr, dr_dxi2 * dGF_dr, dz_dxi * dGF_dz))
+        return wavenumber * GF, wavenumber * (zero(x) .+ (dr_dxi1 * dGF_dr, dr_dxi2 * dGF_dr, dz_dxi * dGF_dz))
         # The zero(x) is a workaround to convert the following tuple to the same type as `x` (either Vector or SVector).
     end
 end
