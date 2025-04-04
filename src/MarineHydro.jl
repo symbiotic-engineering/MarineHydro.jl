@@ -71,6 +71,25 @@ function assemble_matrix_wu(mesh, wavenumber; direct=true)
     return assemble_matrices([Rankine(), RankineReflected(), GFWu()], mesh, wavenumber; direct)
 end
 
+
+function assemble_matrices_(greens_functions, mesh, wavenumber; direct=true, arrtype=Array)
+    elements = arrtype([element(mesh, i) for i in 1:mesh.nfaces])
+    co_elements = reshape(elements, (1, length(elements)))  # Same but as a (1, n) row vector
+    S(e1, e2) = integral(greens_functions, e1, e2, wavenumber)
+    S_matrix = -1/(4π) * S.(elements, co_elements)
+
+    if direct
+        D(e1, e2) = MarineHydro.normal(e2)' * integral_gradient(greens_functions, e1, e2, wavenumber, with_respect_to_first_variable=false)
+        D_matrix = -1/(4π) * D.(elements, co_elements)
+        return S_matrix, D_matrix + arrtype(0.5 .* I(mesh.nfaces))
+    else
+        K(e1, e2) = MarineHydro.normal(e1)' * integral_gradient(greens_functions, e1, e2, wavenumber, with_respect_to_first_variable=true)
+        K_matrix = -1/(4π) * K.(elements, co_elements)
+        return S_matrix, K_matrix + arrtype(0.5 .* I(mesh.nfaces))
+    end
+end
+
+
 function radiation_bc(mesh::Mesh, dof, omega)
     """
         radiation_bc(mesh::Mesh, dof, omega)

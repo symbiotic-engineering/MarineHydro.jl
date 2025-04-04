@@ -21,12 +21,15 @@ function integral(::RankineReflected, element_1, element_2, wavenumber=nothing)
     # = integral(Rankine(), element_1, free_surface_symmetry(element_2))
 end
 
+vertical_reflection(x::T) where T <: Tuple = (x[1], x[2], -x[3])
+vertical_reflection(x::T) where T <: SVector = T((x[1], x[2], -x[3]))
+vertical_reflection(x::T) where T <: Vector = eltype(T)[x[1], x[2], -x[3]]
+
 function integral_gradient(::RankineReflected, element_1, element_2, wavenumber=nothing; with_respect_to_first_variable=false)
+    ng = integral_gradient(Rankine(), free_surface_symmetry(element_1), element_2; with_respect_to_first_variable)
     if with_respect_to_first_variable
-        return integral_gradient(Rankine(), element_1, free_surface_symmetry(element_2); with_respect_to_first_variable)
-        # = vertical_reflection(integral_gradient(Rankine(), free_surface_symmetry(element_1), element_2; with_respect_to_first_variable))
+        return vertical_reflection(ng)
     else
-        return integral_gradient(Rankine(), free_surface_symmetry(element_1), element_2; with_respect_to_first_variable)
-        # = vertical_reflection(integral_gradient(Rankine(), element_1, free_surface_symmetry(element_2); with_respect_to_first_variable))
+        return ng
     end
 end

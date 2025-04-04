@@ -73,13 +73,80 @@ struct ReflectedElement{T}
 end
 free_surface_symmetry(e) = ReflectedElement(e)
 
-center(e::ReflectedElement) = (c = center(e.element); [c[1], c[2], -c[3]])
-normal(e::ReflectedElement) = (n = normal(e.element); [n[1], n[2], -n[3]])
+center(e::ReflectedElement{T}) where T <: Union{NamedTuple, LazyElement} = (c = center(e.element); [c[1], c[2], -c[3]])
+normal(e::ReflectedElement{T}) where T <: Union{NamedTuple, LazyElement} = (n = normal(e.element); [n[1], n[2], -n[3]])
 area(e::ReflectedElement) = area(e.element)
 radius(e::ReflectedElement) = radius(e.element)
-function vertices(e::ReflectedElement)
+function vertices(e::ReflectedElement{T} where T <: Union{NamedTuple, LazyElement})
     v = vertices(e.element)
-    return [
+    ET = eltype(v)
+    return ET[
+        v[4, 1]  v[4, 2]  -v[4, 3];
+        v[3, 1]  v[3, 2]  -v[3, 3];
+        v[2, 1]  v[2, 2]  -v[2, 3];
+        v[1, 1]  v[1, 2]  -v[1, 3];
+        ]   # Inverting order such that order is still consistent with normal vector
+end
+
+
+using StaticArrays
+
+struct StaticArraysMesh
+    vertices::Vector{SVector{3, Float64}}
+    faces::Vector{SVector{4, Int64}}
+    centers::Vector{SVector{3, Float64}}
+    normals::Vector{SVector{3, Float64}}
+    areas::Vector{Float64}
+    radii::Vector{Float64}
+    nvertices::Int64
+    nfaces::Int64
+end
+
+function StaticArraysMesh(mesh::PyObject)
+    mesh = StaticArraysMesh(
+        [SVector(v[1], v[2], v[3]) for v in eachrow(mesh.vertices)],
+        [SVector(f[1], f[2], f[3], f[4]) .+ 1 for f in eachrow(mesh.faces)],
+        [SVector(c[1], c[2], c[3]) for c in eachrow(mesh.faces_centers)],
+        [SVector(n[1], n[2], n[3]) for n in eachrow(mesh.faces_normals)],
+        mesh.faces_areas,
+        mesh.faces_radiuses,
+        mesh.nb_vertices,
+        mesh.nb_faces
+    )
+    return mesh
+end
+
+struct StaticElement
+    center::SVector{3, Float64}
+    vertices::SMatrix{4, 3, Float64, 12}
+    normal::SVector{3, Float64}
+    area::Float64
+    radius::Float64
+end
+
+function MarineHydro.element(mesh::StaticArraysMesh, J::Int)
+    return StaticElement(
+        mesh.centers[J],
+        hcat(mesh.vertices[mesh.faces[J]]...)',  # makes a 4x3 SMatrix
+        mesh.normals[J],
+        mesh.areas[J],
+        mesh.radii[J],
+    )
+end
+
+center(e::StaticElement) = e.center
+normal(e::StaticElement) = e.normal
+area(e::StaticElement) = e.area
+radius(e::StaticElement) = e.radius
+vertices(e::StaticElement) = e.vertices
+
+center(e::ReflectedElement{StaticElement}) = (c = center(e.element); SVector(c[1], c[2], -c[3]))
+normal(e::ReflectedElement{StaticElement}) = (n = normal(e.element); SVector(n[1], n[2], -n[3]))
+area(e::ReflectedElement{StaticElement}) = area(e.element)
+radius(e::ReflectedElement{StaticElement}) = radius(e.element)
+function vertices(e::ReflectedElement{StaticElement})
+    v = vertices(e.element)
+    return @SMatrix [
         v[4, 1] v[4, 2] -v[4, 3]
         v[3, 1] v[3, 2] -v[3, 3];
         v[2, 1] v[2, 2] -v[2, 3];
