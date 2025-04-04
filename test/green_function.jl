@@ -1,17 +1,39 @@
 using Test
+using StaticArrays
 using MarineHydro
 
-@testset "Green function" begin
-
-    e1 = (center=[0.0, 0.0, -1.0],)
-    e2 = (
-        center=[1.0, 1.0, -2.0],
-        vertices=[-0.5 -0.5 0.0; 0.5 -0.5 0.0; 0.5 0.5 0.0; -0.5 0.5 0.0] .+ [1.0, 1.0, -2.0]',
-        normal=[0.0, 0.0, 1.0],
-        radius=sqrt(2)/2,
-        area=1.0,
+all_elements = [
+    "named tuple of vectors" => (
+                        (center=[0.0, 0.0, -1.0],),
+                        (center=[1.0, 1.0, -2.0],
+                         vertices=[-0.5 -0.5 0.0; 0.5 -0.5 0.0; 0.5 0.5 0.0; -0.5 0.5 0.0] .+ [1.0, 1.0, -2.0]',
+                         normal=[0.0, 0.0, 1.0],
+                         area=1.0,
+                         radius=sqrt(2)/2)
+                         ),
+    "static elements" => (
+                        MarineHydro.StaticElement(
+                            SVector(0.0, 0.0, -1.0),
+                            @SMatrix([-0.5 -0.5 0.0; 0.5 -0.5 0.0; 0.5 0.5 0.0; -0.5 0.5 0.0]) .+ SVector(0.0, 0.0, -1.0)',
+                            SVector(0.0, 0.0, 1.0),
+                            1.0,
+                            sqrt(2)/2,
+                        ),
+                        MarineHydro.StaticElement(
+                            SVector(1.0, 1.0, -2.0),
+                            @SMatrix([-0.5 -0.5 0.0; 0.5 -0.5 0.0; 0.5 0.5 0.0; -0.5 0.5 0.0]) .+ SVector(1.0, 1.0, -2.0)',
+                            SVector(0.0, 0.0, 1.0),
+                            1.0,
+                            sqrt(2)/2,
+                            )
     )
-    # @test reshape(sum(e2.vertices; dims=1)/4, :) ≈ e2.center   # Not true in general, but here works for a square
+]
+
+
+@testset "Green function for $elements_kind" for (elements_kind, elements) in all_elements
+
+    e1 = elements[1]
+    e2 = elements[2]
 
     @testset "Rankine" begin
 
