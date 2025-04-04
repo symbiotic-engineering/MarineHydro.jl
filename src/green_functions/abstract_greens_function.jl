@@ -64,3 +64,20 @@ function integral_gradient end
 
 integral_gradient(gfs::_Iterable, e1, e2, w; with_respect_to_first_variable) = sum(integral_gradient(gf, e1, e2, w; with_respect_to_first_variable) for gf in gfs)
 
+
+"""
+    both_integral_and_integral_gradient(::GreensFunction, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
+Calculates both the integral of Green's function and the integral of the gradient of Green's function over a panel.
+# Arguments
+- `element_1`: first point, as a `NamedTuple` with the field `center`.
+- `element_2`: integration panel, as a `NamedTuple` with the fields `center`, `normal`, `vertices`, `radius`, `normal` and `area`.
+- `wavenumber`: Defines the wavenumber for waves ~~~~~. Optional for some Greens functions such as `Rankine()`.
+- `with_respect_to_first_variable`: A boolean flag (default is `false`). If `true`, computes the gradient with respect to `element_1`; otherwise, computes the gradient with respect to `element_2`.
+"""
+function both_integral_and_integral_gradient(gf, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
+    # Default implementation, meant to be overloaded for better performance
+    return (integral(gf, element_1, element_2, wavenumber),
+            integral_gradient(gf, element_1, element_2, wavenumber; with_respect_to_first_variable=with_respect_to_first_variable))
+end
+
+
