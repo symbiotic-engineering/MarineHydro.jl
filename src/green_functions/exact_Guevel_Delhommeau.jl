@@ -26,11 +26,9 @@ function _dimless_wave_term(r, z)
 end
 
 function greens(::ExactGuevelDelhommeau, element_1, element_2, wavenumber)
-    x  = center(element_1)
-    xi = center(element_2)
-    r  = wavenumber * hypot(x[1] - xi[1], x[2] - xi[2])
-    z  = wavenumber * (x[3] + xi[3])
-    return wavenumber * _dimless_wave_term(r, z)
+    with_reduced_coordinates(element_1, element_2, wavenumber) do r, z
+        _dimless_wave_term(r, z)
+    end
 end
 
 """Derivative of dimless_wave_term with respect to r"""
@@ -47,40 +45,16 @@ function _d_dimless_wave_term_dr(r, z)
     return 4*integrate(integrand, 0, π/2,p)
 end
 
-"""Derivative of dimless_wave_term with respect to z"""
-function _d_dimless_wave_term_dz(r, z)
-    return _dimless_wave_term(r, z) + 2/hypot(r, z)
+function gradient_greens(gf::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
+    both_greens_and_gradient_greens(gf, element_1, element_2, wavenumber; with_respect_to_first_variable)[2]
 end
 
-function gradient_greens(::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
-    x = center(element_1)
-    xi = center(element_2)
-    r  = wavenumber * hypot(x[1] - xi[1], x[2] - xi[2])
-    z  = wavenumber * (x[3] + xi[3])
-    dGF_dr = _d_dimless_wave_term_dr(r, z)
-    dGF_dz = _d_dimless_wave_term_dz(r, z)
-    if with_respect_to_first_variable
-        if abs(r) > 1e-6
-            dr_dx1 = wavenumber^2 / r * (x[1] - xi[1])
-            dr_dx2 = wavenumber^2 / r * (x[2] - xi[2])
-        else
-            dr_dx1 = zero(x[1])
-            dr_dx2 = zero(x[2])
-        end
-        dz_dx = wavenumber
-        return wavenumber * (zero(x) .+ (dr_dx1 * dGF_dr, dr_dx2 * dGF_dr, dz_dx * dGF_dz))
-        # The zero(x) is a workaround to convert the following tuple to the same type as `x` (either Vector or SVector).
-    else
-        if abs(r) > 1e-6
-            dr_dxi1 = wavenumber^2 / r * (xi[1] - x[1])
-            dr_dxi2 = wavenumber^2 / r * (xi[2] - x[2])
-        else
-            dr_dxi1 = zero(x[1])
-            dr_dxi2 = zero(x[2])
-        end
-        dz_dxi = wavenumber
-        return wavenumber * (zero(x) .+ (dr_dxi1 * dGF_dr, dr_dxi2 * dGF_dr, dz_dxi * dGF_dz))
-        # The zero(x) is a workaround to convert the following tuple to the same type as `x` (either Vector or SVector).
+function both_greens_and_gradient_greens(::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
+    with_reduced_coordinates_derivative(element_1, element_2, wavenumber; with_respect_to_first_variable) do r, z
+        dGF_dr = _d_dimless_wave_term_dr(r, z)
+        GF = _dimless_wave_term(r, z)
+        dGF_dz = GF + 2/hypot(r, z)
+        return GF, dGF_dr, dGF_dz 
     end
 end
 
@@ -92,4 +66,10 @@ end
 function integral_gradient(g::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
     # One-point approximation of the integral
     return gradient_greens(g, element_1, element_2, wavenumber; with_respect_to_first_variable) * area(element_2)
+end
+
+function both_integral_and_integral_gradient(g::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable=false)
+    # One-point approximation of the integral
+    GF, dGF = both_greens_and_gradient_greens(g::ExactGuevelDelhommeau, element_1, element_2, wavenumber; with_respect_to_first_variable)
+    return GF * area(element_2), dGF * area(element_2)
 end

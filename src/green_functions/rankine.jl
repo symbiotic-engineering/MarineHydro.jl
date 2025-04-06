@@ -62,7 +62,7 @@ function integral(::Rankine, element_1, element_2, wavenumber=nothing)
     return integral
 end
 
-function integral_gradient(::Rankine, element_1, element_2, wavenumber=nothing; with_respect_to_first_variable=false)
+function both_integral_and_integral_gradient(::Rankine, element_1, element_2, wavenumber=nothing; with_respect_to_first_variable=false)
     point = center(element_1)
     source_point = center(element_2)
     source_vertices = vertices(element_2)
@@ -73,8 +73,10 @@ function integral_gradient(::Rankine, element_1, element_2, wavenumber=nothing; 
     r = norm(r̄)
     if r > 7 * source_radius # if far -> Rankine Direct
         derivative = 1 / r^3 * r̄
+        integral = source_area / r
         integral_gradient = derivative * source_area
     else  # else (if close) deal with singularity
+        integral = zero(source_area)
         integral_gradient = zero(point)
         GZ = dot(r̄, source_normal)
         RR = ntuple(i -> _distance(point, source_vertices[i,:]), 4)
@@ -104,6 +106,8 @@ function integral_gradient(::Rankine, element_1, element_2, wavenumber=nothing; 
                 ANTX = 2 * segment_length * GYX
                 DNTX = 2 * (RR[index_next_vertex] + RR[index_vertex] + abs(GZ)) * ANLX +
                     2 * sign(GZ) * (RR[index_next_vertex] + RR[index_vertex]) * source_normal
+
+                integral += GY * ALDEN
                 integral_gradient = integral_gradient .-
                                         (ALDEN .* GYX .- 2 * sign(GZ) * AT .* source_normal .+
                                         GY * (DNL - ANL) ./ (ANL .* DNL) .* ANLX .-
@@ -112,8 +116,13 @@ function integral_gradient(::Rankine, element_1, element_2, wavenumber=nothing; 
         end
     end
     if with_respect_to_first_variable
-        return -integral_gradient
+        return integral, -integral_gradient
     else  # Gradient with respect to second variable
-        return integral_gradient
+        return integral, integral_gradient
     end
+end
+
+
+function integral_gradient(gf::Rankine, element_1, element_2, wavenumber=nothing; with_respect_to_first_variable=false)
+    both_integral_and_integral_gradient(gf, element_1, element_2, wavenumber; with_respect_to_first_variable)[2]
 end
