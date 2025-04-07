@@ -11,6 +11,22 @@ smesh = MarineHydro.StaticArraysMesh(cptmesh)
 
 greens_functions = (Rankine(), RankineReflected(), GFWu())
 
+@testset "Matrix shape" begin
+    wavenumber = 1.0
+    ω = √(wavenumber*9.8)
+    dof = [0,0,1]
+    green_functions = (
+        Rankine(),
+        RankineReflected(),
+        #=GFWu()=#
+    )
+    S, D = assemble_matrices(green_functions, mesh, 1.0);
+    S_, K = assemble_matrices(green_functions, mesh, 1.0; direct=false);
+    @test size(S) == size(S_) == size(D) == size(K)
+    @test S ≈ S_
+    @test !(D ≈ K)
+end
+
 S, D = assemble_matrices(greens_functions, mesh, 1.0)
 S_, D_ = MarineHydro.assemble_matrices_(greens_functions, mesh, 1.0)
 S__, D__ = MarineHydro.assemble_matrices_(greens_functions, smesh, 1.0)

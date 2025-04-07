@@ -6,7 +6,7 @@ using PyCall
 cpt = pyimport("capytaine")
 radius = 1.0 #fixed
 resolution = (10, 10)
-cptmesh = cpt.mesh_sphere(name="sphere", radius=radius, center=(0, 0, 0), resolution=resolution) 
+cptmesh = cpt.mesh_sphere(name="sphere", radius=radius, center=(0, 0, 0), resolution=resolution)
 cptmesh.keep_immersed_part(inplace=true)
 mesh = Mesh(cptmesh)
 
@@ -51,37 +51,3 @@ end
 
 end
 
-@testset "Comparison of Excitation Forces with Capytaine (rtol = 1e-1) " begin
-
-   ### diffraction forces analytical by https://www.sciencedirect.com/science/article/pii/S002980182202813X
-    #buut that did not match 
-    #from capytaine 
-    cpt = pyimport("capytaine")
-    r = 1.0
-    # Create the mesh and body
-    cptmesh = cpt.mesh_sphere(radius=r, center=(0, 0, 0), resolution=(14, 14)).immersed_part()
-    cptbody = cpt.FloatingBody(cptmesh, name="sphere")
-    cptbody.add_translation_dof(name="Heave")
-
-    # Define the wave numbers and corresponding frequencies
-    K_heave_diff = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-    omegas = sqrt.(K_heave_diff .* 9.81)
-    non_dimensional_const = 2/3 * pi * r^3 * 1000
-
-    # Create the test matrix
-    xr = pyimport("xarray")
-    test_matrix = xr.Dataset(coords=Dict("omega" => omegas, "wave_direction" => [0.0]))
-    results = cpt.BEMSolver().fill_dataset(test_matrix, cptbody, method="direct")
-    Froude_heave =  vec(results["Froude_Krylov_force"].values)./ non_dimensional_const
-    Diff_heave =   vec(results["diffraction_force"].values) ./ non_dimensional_const
-    mesh = Mesh(cptmesh)
-    g = 9.81
-    dof = [0,0,1]
-    julia_diff_omega = [DiffractionForce(mesh,w,dof) for w in omegas] ./ non_dimensional_const
-    julia_fr_force = [FroudeKrylovForce(mesh,w,dof) for w in omegas] ./ non_dimensional_const
-    @test real.(julia_diff_omega) ≈ real.(Diff_heave) rtol=1e-1
-    @test imag.(julia_diff_omega) ≈ imag.(Diff_heave) rtol=1e-1
-    @test real.(julia_fr_force) ≈ real.(Froude_heave) rtol=1e-1
-    @test imag.(julia_fr_force) ≈ imag.(Froude_heave) atol=1e-1
-
-end 

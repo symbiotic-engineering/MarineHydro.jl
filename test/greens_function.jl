@@ -30,7 +30,7 @@ all_elements = [
 ]
 
 
-@testset "Green function for $elements_kind" for (elements_kind, elements) in all_elements
+@testset "Greens function for $elements_kind" for (elements_kind, elements) in all_elements
 
     e1 = elements[1]
     e2 = elements[2]
