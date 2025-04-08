@@ -8,8 +8,17 @@ using StaticArrays
 
 wavenumber = 1.0
 
-green_functions = ["Rankine" => Rankine(), "Wu" => GFWu(), "ExactDelhommeau" => ExactGuevelDelhommeau()]
-integrals = ["S" => MarineHydro.integral, "D" => MarineHydro.integral_gradient, "both" => MarineHydro.both_integral_and_integral_gradient]
+green_functions = [
+    "Rankine" => Rankine(),
+    "RankineReflected" => RankineReflected(),
+    "Wu" => GFWu(),
+    "ExactDelhommeau" => ExactGuevelDelhommeau()
+]
+integrals = [
+    "S" => MarineHydro.integral,
+    "D" => MarineHydro.integral_gradient,
+    "both" => MarineHydro.both_integral_and_integral_gradient
+]
 
 static_element_1 = MarineHydro.StaticElement(
     SVector(0.0, 0.0, -1.0),
@@ -45,4 +54,4 @@ end
 
 tune!(suite)
 res = run(suite)
-BenchmarkTools.save("latest_results.json", res)
+# BenchmarkTools.save("latest_results.json", res)
