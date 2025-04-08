@@ -3,7 +3,7 @@ using PyCall
 using Test
 
 mesh = MarineHydro.Mesh(MarineHydro.example_mesh_from_capytaine())
-smesh = MarineHydro.StaticArraysMesh(MarineHydro.StaticArraysMesh)
+smesh = MarineHydro.StaticArraysMesh(MarineHydro.example_mesh_from_capytaine())
 greens_functions = (Rankine(), RankineReflected(), GFWu())
 
 @testset "Matrix shape" begin
