@@ -2,13 +2,8 @@ using MarineHydro
 using PyCall
 using Test
 
-cpt = pyimport("capytaine")
-radius = 1.0
-resolution = (5, 5)
-cptmesh = cpt.mesh_sphere(radius=radius, center=(0, 0, 0), resolution=resolution, name="floating sphere").immersed_part()
-mesh = Mesh(cptmesh)
-smesh = MarineHydro.StaticArraysMesh(cptmesh)
-
+mesh = MarineHydro.Mesh(MarineHydro.example_mesh_from_capytaine())
+smesh = MarineHydro.StaticArraysMesh(MarineHydro.StaticArraysMesh)
 greens_functions = (Rankine(), RankineReflected(), GFWu())
 
 @testset "Matrix shape" begin

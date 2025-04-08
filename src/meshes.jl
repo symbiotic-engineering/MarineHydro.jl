@@ -154,3 +154,11 @@ function vertices(e::ReflectedElement{StaticElement})
         v[1, 1] v[1, 2] -v[1, 3];
     ]   # Inverting order such that order is still consistent with normal vector
 end
+
+
+function example_mesh_from_capytaine()
+    cpt = pyimport("capytaine")
+    radius = 1.0
+    resolution = (4, 4)
+    return cpt.mesh_sphere(radius=radius, center=(0, 0, 0), resolution=resolution, name="floating sphere").immersed_part()
+end
