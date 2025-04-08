@@ -1,7 +1,7 @@
 using BenchmarkTools
 using MarineHydro
 
-resolution = 6
+resolution = 20
 
 greens_functions = [
     "Rankine" => Rankine(),
