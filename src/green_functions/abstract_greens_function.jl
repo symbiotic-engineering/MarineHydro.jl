@@ -31,7 +31,7 @@ Calculates the gradient of the Rankine Green's function between two points.
 """
 function gradient_greens end
 
-gradient_greens(gfs::_Iterable, e1, e2, w; with_respect_to_first_variable) = sum(gradient_greens(gf, e1, e2, w; with_respect_to_first_variable) for gf in gfs)
+gradient_greens(gfs::_Iterable, e1, e2, w; with_respect_to_first_variable=false) = sum(gradient_greens(gf, e1, e2, w; with_respect_to_first_variable) for gf in gfs)
 
 
 """
@@ -62,7 +62,7 @@ Calculates the integral of the gradient of Green's function over a panel.
 """
 function integral_gradient end
 
-integral_gradient(gfs::_Iterable, e1, e2, w; with_respect_to_first_variable) = sum(integral_gradient(gf, e1, e2, w; with_respect_to_first_variable) for gf in gfs)
+integral_gradient(gfs::_Iterable, e1, e2, w; with_respect_to_first_variable=false) = sum(integral_gradient(gf, e1, e2, w; with_respect_to_first_variable) for gf in gfs)
 
 
 """
@@ -79,6 +79,8 @@ function both_integral_and_integral_gradient(gf, element_1, element_2, wavenumbe
     return (integral(gf, element_1, element_2, wavenumber),
             integral_gradient(gf, element_1, element_2, wavenumber; with_respect_to_first_variable=with_respect_to_first_variable))
 end
+
+both_integral_and_integral_gradient(gfs::_Iterable, e1, e2, w; with_respect_to_first_variable=false) = reduce(.+, both_integral_and_integral_gradient(gf, e1, e2, w; with_respect_to_first_variable) for gf in gfs)
 
 
 # Below some common tools used for several wave terms

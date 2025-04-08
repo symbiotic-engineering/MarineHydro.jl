@@ -12,7 +12,8 @@ green_functions = [
     "Rankine" => Rankine(),
     "RankineReflected" => RankineReflected(),
     "Wu" => GFWu(),
-    "ExactDelhommeau" => ExactGuevelDelhommeau()
+    "ExactDelhommeau" => ExactGuevelDelhommeau(),
+    "Full" => (Rankine(), RankineReflected(), GFWu())
 ]
 integrals = [
     "S" => MarineHydro.integral,
@@ -53,5 +54,4 @@ for (gf_name, gf) in green_functions
 end
 
 tune!(suite)
-res = run(suite)
-# BenchmarkTools.save("latest_results.json", res)
+res = run(suite, verbose=true)

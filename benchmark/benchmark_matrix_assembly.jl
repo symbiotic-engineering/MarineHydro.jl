@@ -35,7 +35,7 @@ cpt = pyimport("capytaine")
 cpt_gf = cpt.Delhommeau()
 cpt_mesh = MarineHydro.example_mesh_from_capytaine(resolution)
 suite["Full"]["Capytaine"] = @benchmarkable begin
-    ($cpt_gf).evaluate($cpt_mesh, $cpt_mesh, 0.0, Inf, $wavenumber)
+    ($cpt_gf.evaluate)($cpt_mesh, $cpt_mesh, $0.0, $Inf, $wavenumber)
 end
 
 tune!(suite)
