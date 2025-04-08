@@ -1,3 +1,5 @@
+using SpecialFunctions: besselj0, besselj1, bessely0, bessely1
+
 struct GFWu <: GreensFunction end
 
 function greens(::GFWu, element_1, element_2, wavenumber)
