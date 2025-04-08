@@ -22,6 +22,7 @@ methods = [
 wavenumber = 1.0
 
 suite = BenchmarkGroup()
+
 for (gf_name, gf) in greens_functions
     for (mesh_name, mesh) in meshes
         for (method_name, method) in methods
@@ -30,6 +31,7 @@ for (gf_name, gf) in greens_functions
     end
 end
 
+ENV["OMP_NUM_THREADS"] = "1"
 using PyCall
 cpt = pyimport("capytaine")
 cpt_gf = cpt.Delhommeau()
@@ -38,5 +40,5 @@ suite["Full"]["Capytaine"] = @benchmarkable begin
     ($cpt_gf.evaluate)($cpt_mesh, $cpt_mesh, $0.0, $Inf, $wavenumber)
 end
 
-tune!(suite)
+# tune!(suite)
 res = run(suite, verbose=true)

@@ -4,6 +4,8 @@ using CUDA
 using DataFrames
 using Plots
 
+using LinearAlgebra.BLAS
+BLAS.set_num_threads(1)
 
 greens_functions = (Rankine(), RankineReflected(), GFWu())
 
