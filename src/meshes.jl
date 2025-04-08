@@ -47,10 +47,10 @@ end
 
 using PyCall
 
-function example_mesh_from_capytaine()
+function example_mesh_from_capytaine(resolution=4)
     cpt = pyimport("capytaine")
     radius = 1.0
-    resolution = (4, 4)
+    resolution = (resolution, resolution)
     return cpt.mesh_sphere(radius=radius, center=(0, 0, 0), resolution=resolution, name="floating sphere").immersed_part()
 end
 

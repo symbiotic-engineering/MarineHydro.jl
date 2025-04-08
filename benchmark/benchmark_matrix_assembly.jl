@@ -1,19 +1,22 @@
 using BenchmarkTools
 using MarineHydro
 
+resolution = 6
+
 greens_functions = [
     "Rankine" => Rankine(),
     "Full" => (Rankine(), RankineReflected(), GFWu())
     ]
 
 meshes = [
-    "Default" => MarineHydro.Mesh(MarineHydro.example_mesh_from_capytaine()),
-    "StaticArrays" => MarineHydro.StaticArraysMesh(MarineHydro.example_mesh_from_capytaine()),
+    "Mesh" => MarineHydro.Mesh(MarineHydro.example_mesh_from_capytaine(resolution)),
+    "StaticArraysMesh" => MarineHydro.StaticArraysMesh(MarineHydro.example_mesh_from_capytaine(resolution)),
 ]
 
 methods = [
-    "Default" => MarineHydro.assemble_matrices,
-    "Broadcasting" => MarineHydro.assemble_matrices_,
+    "Comprehension" => MarineHydro.assemble_matrices_comprehension,
+    "Broadcasting" => MarineHydro.assemble_matrices_broadcasting,
+    "Explicit Both" => MarineHydro.assemble_matrices_explicit_both,
 ]
 
 wavenumber = 1.0
@@ -27,5 +30,13 @@ for (gf_name, gf) in greens_functions
     end
 end
 
+using PyCall
+cpt = pyimport("capytaine")
+cpt_gf = cpt.Delhommeau()
+cpt_mesh = MarineHydro.example_mesh_from_capytaine(resolution)
+suite["Full"]["Capytaine"] = @benchmarkable begin
+    ($cpt_gf).evaluate($cpt_mesh, $cpt_mesh, 0.0, Inf, $wavenumber)
+end
+
 tune!(suite)
-res = run(suite)
+res = run(suite, verbose=true)
