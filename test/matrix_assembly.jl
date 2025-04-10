@@ -22,9 +22,9 @@ greens_functions = (Rankine(), RankineReflected(), GFWu())
     @test !(D ≈ K)
 end
 
-S, D = assemble_matrices(greens_functions, mesh, 1.0)
-S_, D_ = MarineHydro.assemble_matrices_(greens_functions, mesh, 1.0)
-S__, D__ = MarineHydro.assemble_matrices_(greens_functions, smesh, 1.0)
+S, D = MarineHydro.assemble_matrices_comprehension(greens_functions, mesh, 1.0)
+S_, D_ = MarineHydro.assemble_matrices_broadcasting(greens_functions, mesh, 1.0)
+S__, D__ = MarineHydro.assemble_matrices_broadcasting(greens_functions, smesh, 1.0)
 @test S ≈ S_ ≈ S__
 @test D ≈ D_ ≈ D__
 
