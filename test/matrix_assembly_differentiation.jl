@@ -5,12 +5,8 @@ using PyCall
 using LinearAlgebra
 
 @testset "Matrix Differentiability Tests" begin
-    cpt = pyimport("capytaine")
-    radius = 1.0
-    resolution = (4, 4) #smaller data just to test
-    cptmesh = cpt.mesh_sphere(name="sphere", radius=radius, center=(0, 0, 0), resolution=resolution)
-    cptmesh.keep_immersed_part(inplace=true)
-    mesh = Mesh(cptmesh)
+    mesh = MarineHydro.Mesh(MarineHydro.example_mesh_from_capytaine())
+    green_functions = (Rankine(), RankineReflected(), GFWu())
 
     # Define parameters
     wavenumber = 1.0
@@ -19,31 +15,23 @@ using LinearAlgebra
 
     @testset "Radiation Boundary Condition Tests" begin
         # Test differentiability using Zygote
-    Ji_bc_mesh, Ji_bc_dof , Ji_bc_ω = Zygote.jacobian((mesh, dof, ω) -> imag.(radiation_bc(mesh, dof, ω)), mesh,dof,ω)
+        Ji_bc_mesh, Ji_bc_dof , Ji_bc_ω = Zygote.jacobian((mesh, dof, ω) -> imag.(radiation_bc(mesh, dof, ω)), mesh, dof, ω)
 
-    @test Ji_bc_ω !== nothing
-    @test Ji_bc_dof !== nothing
-    @test typeof(Ji_bc_ω) == Vector{Float64}
-    #Test the size of the gradient
+        @test Ji_bc_ω !== nothing
+        @test Ji_bc_dof !== nothing
+        @test typeof(Ji_bc_ω) == Vector{Float64}
+        #Test the size of the gradient
 
-    # Jr_bc_mesh, Jr_bc_dof , Jr_bc_ω = Zygote.jacobian((mesh, dof, ω) -> real.(radiation_bc(mesh, dof, ω)), mesh,dof,ω)
+        # Jr_bc_mesh, Jr_bc_dof , Jr_bc_ω = Zygote.jacobian((mesh, dof, ω) -> real.(radiation_bc(mesh, dof, ω)), mesh,dof,ω)
 
-    # @test Jr_bc_ω !== nothing
-    # @test typeof(Jr_bc_ω) == Vector{Float64}
-    # @test Ji_bc_mesh !== nothing  # this fails not sure why ;  probably due to vector with respect to matrix?
-    # Test the size of the gradient
-    # @test size(real_grad_bc.normals) == size(mesh.normals)
-
+        # @test Jr_bc_ω !== nothing
+        # @test typeof(Jr_bc_ω) == Vector{Float64}
+        # @test Ji_bc_mesh !== nothing  # this fails not sure why ;  probably due to vector with respect to matrix?
+        # Test the size of the gradient
+        # @test size(real_grad_bc.normals) == size(mesh.normals)
     end
 
     @testset "Differentiability of assemble_matrices with respect to mesh.vertices" begin
-        # Create the base mesh using Capytaine
-        green_functions = (
-            Rankine(),
-            RankineReflected(),
-            GFWu(),
-        )
-
         # Function to test differentiability of `assemble_matrices` with respect to vertices
         function test_S_assemble_matrices(vertices) #To do - split S and D/K matrix test
             mesh_new = Mesh(

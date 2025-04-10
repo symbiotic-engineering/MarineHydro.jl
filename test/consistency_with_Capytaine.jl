@@ -2,10 +2,7 @@ using MarineHydro
 using Test
 using PyCall
 
-cpt = pyimport("capytaine")
-radius = 1.0
-resolution = (5, 5)
-cpt_mesh_sphere = cpt.mesh_sphere(radius=radius, center=(0, 0, 0), resolution=resolution, name="floating sphere").immersed_part()
+cpt_mesh_sphere = MarineHydro.example_mesh_from_capytaine()
 cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).copy(name="floating two spheres")
 
 @testset "Comparison with Capytaine for $(cptmesh.name)" for cptmesh in [cpt_mesh_sphere, cpt_mesh_two_spheres]
@@ -59,7 +56,7 @@ cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).cop
         @test imag.(D) ≈ imag.(capy_D)  atol=1e-6
     end
 
-    @testset "Diffraction and Excitation methods, boundary condtion, airywaves test" begin 
+    @testset "Diffraction and Excitation methods, boundary condition, airywaves test" begin 
         cpt = pyimport("capytaine")
         r = 1.0
         ω = 1.03
