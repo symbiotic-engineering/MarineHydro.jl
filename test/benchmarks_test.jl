@@ -1,6 +1,6 @@
 using BenchmarkTools
 using MarineHydro 
-using PyCall
+using PythonCall
 using Zygote
 
 cpt = pyimport("capytaine")

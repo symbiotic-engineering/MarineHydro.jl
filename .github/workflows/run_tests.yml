@@ -33,9 +33,11 @@ jobs:
     - name: Build package
       uses: julia-actions/julia-buildpkg@v1
       env:
-        PYTHON: /home/runner/.capy-venv/bin/python
+        JULIA_PYTHONCALL_EXE: /home/runner/.capy-venv/bin/python
+        JULIA_CONDAPKG_BACKEND: Null
 
     - name: Run test suite
       uses: julia-actions/julia-runtest@v1
       env:
-        PYTHON: /home/runner/.capy-venv/bin/python
+        JULIA_PYTHONCALL_EXE: /home/runner/.capy-venv/bin/python
+        JULIA_CONDAPKG_BACKEND: Null

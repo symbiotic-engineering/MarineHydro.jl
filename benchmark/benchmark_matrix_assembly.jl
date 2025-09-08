@@ -32,7 +32,7 @@ for (gf_name, gf) in greens_functions
 end
 
 ENV["OMP_NUM_THREADS"] = "1"
-using PyCall
+using PythonCall
 cpt = pyimport("capytaine")
 cpt_gf = cpt.Delhommeau()
 cpt_mesh = MarineHydro.example_mesh_from_capytaine(resolution)

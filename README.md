@@ -68,17 +68,18 @@ Fully-differentiable boundary element solver for marine hydrodynamics. This new 
    Pkg.activate(".")
    Pkg.instantiate()
    ```
-   You may need to configure PyCall. Note: Running `tests/` automatically install capytaine and uses it. 
-4. **Configure PyCall**
+   You may need to configure PythonCall.
+4. **Configure PythonCall**
    ```
-   ENV["PYTHON"] = "/path/to/capytaine_env/bin/python" # run 'which python' in your terminal for this
+   ENV["JULIA_CONDAPKG_BACKEND"] = "Null"
+   ENV["JULIA_PYTHONCALL_EXE"] = "/path/to/capytaine_env/bin/python" # run 'which python' in your terminal for this
    ```
   
 6. **Using the MarineHydro Module**  
 Load the module in your Julia session:  
 ```julia
 using MarineHydro
-using PyCall
+using PythonCall
 # import your capytaine mesh
 cpt = pyimport("capytaine")
 radius = 1.0 #fixed

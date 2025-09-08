@@ -1,9 +1,32 @@
 using MarineHydro
 using Test
-using PyCall
+using PythonCall
 
 cpt_mesh_sphere = MarineHydro.example_mesh_from_capytaine()
 cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).copy(name="floating two spheres")
+
+function cpt_assemble_matrix(cptmesh; free_surface, water_depth, wavenumber, adjoint_double_layer, tabulation=true)
+    if tabulation
+        S, D = cpt.Delhommeau().evaluate(
+            cptmesh,
+            cptmesh,
+            free_surface=free_surface,
+            water_depth=water_depth,
+            wavenumber=wavenumber,
+            adjoint_double_layer=adjoint_double_layer
+        )
+    else
+        S, D = cpt.Delhommeau(tabulation_nr=0).evaluate(
+            cptmesh,
+            cptmesh,
+            free_surface=free_surface,
+            water_depth=water_depth,
+            wavenumber=wavenumber,
+            adjoint_double_layer=adjoint_double_layer
+        )
+    end
+    return pyconvert(Array, S), pyconvert(Array, D)
+end
 
 @testset "Comparison with Capytaine for $(cptmesh.name)" for cptmesh in [cpt_mesh_sphere, cpt_mesh_two_spheres]
 
@@ -15,7 +38,7 @@ cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).cop
     @testset "Pure Rankine, direct=$direct" for direct in [true, false]
         green_functions = (Rankine(),)
         S, D = assemble_matrices(green_functions, mesh, 1.0, direct=direct)
-        capy_S, capy_D = cpt.Delhommeau().evaluate(cptmesh, cptmesh, free_surface=Inf, water_depth=Inf, wavenumber=1.0, adjoint_double_layer=!direct)
+        capy_S, capy_D = cpt_assemble_matrix(cptmesh; free_surface=Inf, water_depth=Inf, wavenumber=1.0, adjoint_double_layer=!direct)
         @test S ≈ capy_S  atol=1e-6
         @test D ≈ capy_D  atol=1e-6
     end
@@ -23,7 +46,7 @@ cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).cop
     @testset "Rankine + reflected, direct=$direct" for direct in [true, false]
         green_functions = (Rankine(), RankineReflected())
         S, D = assemble_matrices(green_functions, mesh, 1.0, direct=direct)
-        capy_S, capy_D = cpt.Delhommeau().evaluate(cptmesh, cptmesh, free_surface=0.0, water_depth=Inf, wavenumber=0.0, adjoint_double_layer=!direct)
+        capy_S, capy_D = cpt_assemble_matrix(cptmesh, free_surface=0.0, water_depth=Inf, wavenumber=0.0, adjoint_double_layer=!direct)
         @test S ≈ capy_S  atol=1e-6
         @test D ≈ capy_D  atol=1e-6
     end
@@ -31,7 +54,7 @@ cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).cop
     @testset "Rankine - reflected, direct=$direct" for direct in [true, false]
         green_functions = (Rankine(), RankineReflectedNegative())
         S, D = assemble_matrices(green_functions, mesh, 1.0, direct=direct)
-        capy_S, capy_D = cpt.Delhommeau().evaluate(cptmesh, cptmesh, free_surface=0.0, water_depth=Inf, wavenumber=Inf, adjoint_double_layer=!direct)
+        capy_S, capy_D = cpt_assemble_matrix(cptmesh, free_surface=0.0, water_depth=Inf, wavenumber=Inf, adjoint_double_layer=!direct)
         @test S ≈ capy_S  atol=1e-6
         @test D ≈ capy_D  atol=1e-6
     end
@@ -39,7 +62,7 @@ cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).cop
     @testset "Full Green function with Guével-Delhommeau, direct=$direct, k=$k" for direct in [true, false], k in [1.0, 2.0]
         green_functions = (Rankine(), RankineReflected(), ExactGuevelDelhommeau(),)
         S, D = assemble_matrices(green_functions, mesh, k, direct=direct)
-        capy_S, capy_D = cpt.Delhommeau(tabulation_nr=0).evaluate(cptmesh, cptmesh, free_surface=0.0, water_depth=Inf, wavenumber=k, adjoint_double_layer=!direct)
+        capy_S, capy_D = cpt_assemble_matrix(cptmesh, free_surface=0.0, water_depth=Inf, wavenumber=k, adjoint_double_layer=!direct, tabulation=false)
         @test real.(S) ≈ real.(capy_S)  atol=1e-3
         @test imag.(S) ≈ imag.(capy_S)  atol=1e-6
         @test real.(D) ≈ real.(capy_D)  atol=1e-4
@@ -49,7 +72,7 @@ cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).cop
     @testset "Full Green function with Wu, direct=$direct, k=$k" for direct in [true, false], k in [1.0, 2.0]
         green_functions = (Rankine(), RankineReflected(), GFWu())
         S, D = assemble_matrices(green_functions, mesh, k, direct=direct)
-        capy_S, capy_D = cpt.Delhommeau(tabulation_nr=0).evaluate(cptmesh, cptmesh, free_surface=0.0, water_depth=Inf, wavenumber=k, adjoint_double_layer=!direct)
+        capy_S, capy_D = cpt_assemble_matrix(cptmesh, free_surface=0.0, water_depth=Inf, wavenumber=k, adjoint_double_layer=!direct, tabulation=false)
         @test real.(S) ≈ real.(capy_S)  atol=1e-2
         @test imag.(S) ≈ imag.(capy_S)  atol=1e-6
         @test real.(D) ≈ real.(capy_D)  atol=1e-2
@@ -65,20 +88,20 @@ cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).cop
         cptbody = cpt.FloatingBody(cptmesh, name="sphere")
         cptbody.add_translation_dof(name="Heave")
         pb = cpt.DiffractionProblem(body = cptbody,omega = ω,wave_direction= 0 )
-        diffProbBC = pb.boundary_condition
+        diffProbBC = pyconvert(Array, pb.boundary_condition)
         mesh  = Mesh(cptmesh)
         juliaBC = AiryBC(mesh,ω)
         @test diffProbBC ≈ juliaBC atol=1e-3 rtol = 1e-3
 
-        capyairy = cpt.bem.airy_waves.airy_waves_pressure(cptmesh.faces_centers, pb)
+        capyairy = pyconvert(Array, cpt.bem.airy_waves.airy_waves_pressure(cptmesh.faces_centers, pb))
         juliaairy = airy_waves_pressure(mesh.centers, ω)
         @test abs.(capyairy) ≈ abs.(juliaairy) atol=1e-3 rtol = 1e-3
 
-        capyairyV =cpt.bem.airy_waves.airy_waves_velocity(cptmesh.faces_centers,pb)
+        capyairyV = pyconvert(Array, cpt.bem.airy_waves.airy_waves_velocity(cptmesh.faces_centers,pb))
         juliaairyV = airy_waves_velocity(mesh.centers,ω)
         @test capyairyV ≈ juliaairyV atol=1e-4 rtol = 1e-4
 
-        capyairyPot =cpt.bem.airy_waves.airy_waves_potential(cptmesh.faces_centers,pb)
+        capyairyPot = pyconvert(Array, cpt.bem.airy_waves.airy_waves_potential(cptmesh.faces_centers,pb))
         juliaairyPot = airy_waves_potential(mesh.centers, ω)
         @test capyairyPot ≈ juliaairyPot atol=1e-4 rtol = 1e-4
     end
@@ -105,8 +128,8 @@ end
     xr = pyimport("xarray")
     test_matrix = xr.Dataset(coords=Dict("omega" => omegas, "wave_direction" => [0.0]))
     results = cpt.BEMSolver().fill_dataset(test_matrix, cptbody, method="direct")
-    Froude_heave =  vec(results["Froude_Krylov_force"].values)./ non_dimensional_const
-    Diff_heave =   vec(results["diffraction_force"].values) ./ non_dimensional_const
+    Froude_heave =  vec(pyconvert(Array, results["Froude_Krylov_force"].values))./ non_dimensional_const
+    Diff_heave =   vec(pyconvert(Array, results["diffraction_force"].values)) ./ non_dimensional_const
     mesh = Mesh(cptmesh)
     g = 9.81
     dof = [0,0,1]

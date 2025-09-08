@@ -2,7 +2,7 @@
 using Test
 using Zygote
 using MarineHydro
-using PyCall
+using PythonCall
 using LinearAlgebra
 
 @testset "Greens Function Differentiability Tests" begin
