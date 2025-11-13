@@ -1,5 +1,5 @@
 using MarineHydro
-using PyCall
+using PythonCall
 using Test
 
 mesh = MarineHydro.Mesh(MarineHydro.example_mesh_from_capytaine())

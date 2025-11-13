@@ -1,6 +1,6 @@
 using MarineHydro
 using Test
-using PyCall
+using PythonCall
 
 
 cpt = pyimport("capytaine")

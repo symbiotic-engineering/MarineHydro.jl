@@ -45,7 +45,7 @@ end
 ###################################
 
 
-using PyCall
+using PythonCall
 
 function example_mesh_from_capytaine(resolution=4)
     cpt = pyimport("capytaine")
@@ -54,24 +54,30 @@ function example_mesh_from_capytaine(resolution=4)
     return cpt.mesh_sphere(radius=radius, center=(0, 0, 0), resolution=resolution, name="floating sphere").immersed_part()
 end
 
-function Mesh(mesh::PyObject)
+function Mesh(mesh::Py)
     mesh = Mesh(
-        mesh.vertices, mesh.faces, 
-        mesh.faces_centers, mesh.faces_normals, mesh.faces_areas, mesh.faces_radiuses,mesh.nb_vertices,mesh.nb_faces
+        pyconvert(Array, mesh.vertices),
+        pyconvert(Array, mesh.faces),
+        pyconvert(Array, mesh.faces_centers),
+        pyconvert(Array, mesh.faces_normals),
+        pyconvert(Array, mesh.faces_areas),
+        pyconvert(Array, mesh.faces_radiuses),
+        pyconvert(Int, mesh.nb_vertices),
+        pyconvert(Int, mesh.nb_faces)
     )
     return mesh
 end
 
-function StaticArraysMesh(mesh::PyObject)
+function StaticArraysMesh(mesh::Py)
     mesh = StaticArraysMesh(
-        [SVector(v[1], v[2], v[3]) for v in eachrow(mesh.vertices)],
-        [SVector(f[1], f[2], f[3], f[4]) .+ 1 for f in eachrow(mesh.faces)],
-        [SVector(c[1], c[2], c[3]) for c in eachrow(mesh.faces_centers)],
-        [SVector(n[1], n[2], n[3]) for n in eachrow(mesh.faces_normals)],
-        mesh.faces_areas,
-        mesh.faces_radiuses,
-        mesh.nb_vertices,
-        mesh.nb_faces
+            [SVector(v[1], v[2], v[3]) for v in eachrow(pyconvert(Array, mesh.vertices))],
+            [SVector(f[1], f[2], f[3], f[4]) .+ 1 for f in eachrow(pyconvert(Array, mesh.faces))],
+            [SVector(c[1], c[2], c[3]) for c in eachrow(pyconvert(Array, mesh.faces_centers))],
+            [SVector(n[1], n[2], n[3]) for n in eachrow(pyconvert(Array, mesh.faces_normals))],
+            pyconvert(Array, mesh.faces_areas),
+            pyconvert(Array, mesh.faces_radiuses),
+            pyconvert(Int, mesh.nb_vertices),
+            pyconvert(Int, mesh.nb_faces)
     )
     return mesh
 end
