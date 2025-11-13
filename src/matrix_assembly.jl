@@ -12,17 +12,12 @@ function assemble_matrices_comprehension(green_functions, mesh, wavenumber; dire
             # Select the normal based on direct flag
             n = direct ? normal(element_j) : normal(element_i)
 
-            -1/2τ̅ * Complex(n' * integral_gradient(green_functions, element_i, element_j, wavenumber; with_respect_to_first_variable=!direct))
+            c = i == j ? Complex(0.5, 0.0) : Complex(0.0, 0.0)
+
+            c - 1/2τ̅ * Complex(n' * integral_gradient(green_functions, element_i, element_j, wavenumber; with_respect_to_first_variable=!direct))
         end for i in 1:mesh.nfaces, j in 1:mesh.nfaces]
 
-    # Add diagonal elements to D
-    @inbounds begin
-        @views begin
-            D1 = D .+ Diagonal(0.5 .* I(mesh.nfaces))
-        end
-    end
-
-    return S, D1
+    return S, D
 end
 
 function assemble_matrices_explicit_both(green_functions, mesh, wavenumber; direct=true)

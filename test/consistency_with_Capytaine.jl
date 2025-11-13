@@ -128,8 +128,8 @@ end
     xr = pyimport("xarray")
     test_matrix = xr.Dataset(coords=Dict("omega" => omegas, "wave_direction" => [0.0]))
     results = cpt.BEMSolver().fill_dataset(test_matrix, cptbody, method="direct")
-    Froude_heave =  vec(pyconvert(Array, results["Froude_Krylov_force"].values))./ non_dimensional_const
-    Diff_heave =   vec(pyconvert(Array, results["diffraction_force"].values)) ./ non_dimensional_const
+    Froude_heave = vec(pyconvert(Array, results["Froude_Krylov_force"].values)) ./ non_dimensional_const
+    Diff_heave = vec(pyconvert(Array, results["diffraction_force"].values)) ./ non_dimensional_const
     mesh = Mesh(cptmesh)
     g = 9.81
     dof = [0,0,1]

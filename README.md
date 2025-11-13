@@ -23,6 +23,8 @@
 - ⚡ **Mechanical power optimization** for a pair of wave energy converters using exact gradients.
 
 
+https://www.sciencedirect.com/science/article/pii/S0141118725002937
+
 
 Fully-differentiable boundary element solver for marine hydrodynamics. This new solver implements both direct and indirect boundary element formulations and uses two green's function expression, Wu et al, and Delhommeau's varying in their accuracy and speed. 
 <img width="632" alt="image" src="https://github.com/user-attachments/assets/16247838-770b-480d-9f2f-d4b0a02054bf" />
