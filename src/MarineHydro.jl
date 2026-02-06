@@ -24,6 +24,9 @@ export ExactGuevelDelhommeau
 include("meshes.jl")
 export Mesh, element
 
+include("bodies.jl")
+export FloatingBody
+
 include("matrix_assembly.jl")
 export assemble_matrices, assemble_matrix_wu, solve
 

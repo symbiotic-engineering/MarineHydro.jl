@@ -40,6 +40,17 @@ struct StaticArraysMesh
     nfaces::Int64
 end
 
+
+
+
+
+
+
+
+
+
+
+
 ###################################
 #  Loading meshes from Capytaine  #
 ###################################
