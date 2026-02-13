@@ -2,7 +2,7 @@
 
 julia_version = "1.10.10"
 manifest_format = "2.0"
-project_hash = "e7a7f2ce2aee3136be0e7178eb2f66c1bbac73e1"
+project_hash = "55fdab192d98e79bfa140a64a097f5f2debb0a1d"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -354,6 +354,12 @@ weakdeps = ["PDMats", "SparseArrays", "StaticArrays", "Statistics"]
     FillArraysSparseArraysExt = "SparseArrays"
     FillArraysStaticArraysExt = "StaticArrays"
     FillArraysStatisticsExt = "Statistics"
+
+[[deps.FiniteDifferences]]
+deps = ["ChainRulesCore", "LinearAlgebra", "Printf", "Random", "Richardson", "SparseArrays", "StaticArrays"]
+git-tree-sha1 = "0ff4ed4351e1884beff16fc4d54490c6d56b2199"
+uuid = "26cc04aa-876d-5657-8c51-4c34ba976000"
+version = "0.12.33"
 
 [[deps.ForwardDiff]]
 deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "LinearAlgebra", "LogExpFunctions", "NaNMath", "Preferences", "Printf", "Random", "SpecialFunctions"]
@@ -778,6 +784,12 @@ deps = ["ChainRulesCore", "DiffResults", "DiffRules", "ForwardDiff", "FunctionWr
 git-tree-sha1 = "f1b07322a8cdc0d46812473b37fb72f69ec07b22"
 uuid = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 version = "1.16.2"
+
+[[deps.Richardson]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "48f038bfd83344065434089c2a79417f38715c41"
+uuid = "708f8203-808e-40c0-ba2d-98a6953ed40d"
+version = "1.4.2"
 
 [[deps.Rmath]]
 deps = ["Random", "Rmath_jll"]
