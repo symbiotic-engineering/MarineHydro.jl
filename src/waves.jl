@@ -60,8 +60,8 @@ end
 function calculate_radiation_forces(floatingbody::FloatingBody, omega)
     rho = 1023
     g = 9.81
-    Added_mass = Dict{Tuple{Float64, String, String}, Float64}()
-    Radiation_damping = Dict{Tuple{Float64, String, String}, Float64}()
+    Added_mass = Dict{Tuple{Any, String, String}, Any}()
+    Radiation_damping = Dict{Tuple{Any, String, String}, Any}()
     k = omega^2 / g
     mesh = floatingbody.mesh
     S, D = assemble_matrix_wu(mesh, k)
@@ -139,7 +139,7 @@ end
 
 function FroudeKrylovForce(floatingbody::FloatingBody, ω)
     """Compute the Froude-Krylov force."""
-    F_FK = Dict{Tuple{Float64, String}, ComplexF64}()
+    F_FK = Dict{Tuple{Any, String}, Any}()
     mesh = floatingbody.mesh
     pressure =  airy_waves_pressure(mesh.centers,  ω)
     forces = integrate_pressure(floatingbody::FloatingBody, pressure) # this is a Dict with keys associated with influenced dofs
@@ -151,7 +151,7 @@ function FroudeKrylovForce(floatingbody::FloatingBody, ω)
 end
 
 # Old version
-function FroudeKrylovForce(mesh::Mesh, ω)
+function FroudeKrylovForce(mesh::Mesh, ω,dof)
     """Compute the Froude-Krylov force."""
     pressure =  airy_waves_pressure(mesh.centers,  ω)
     return  integrate_pressure(mesh::Mesh, pressure, dof) 
@@ -159,7 +159,7 @@ end
 
 
 function DiffractionForce(floatingbody::FloatingBody,ω)
-    F_D = Dict{Tuple{Float64, String}, ComplexF64}()
+    F_D = Dict{Tuple{Any, String}, Any}()
     mesh = floatingbody.mesh
     green_functions = (
         Rankine(),
@@ -191,7 +191,7 @@ function DiffractionForce(mesh::Mesh,ω,dof)
     S, D = assemble_matrices(green_functions, mesh, k)
     bc = AiryBC(mesh, ω)
     potential = solve(D, S, bc)
-    forces = diffraction_force(floatingbody, potential, ω)
+    forces = diffraction_force(potential,mesh, ω,dof)
     return forces
 end
 
@@ -210,7 +210,7 @@ end
 
 
 # Old version
-function diffraction_force(potential,mesh, omega,dof)
+function diffraction_force(potential::Matrix{ComplexF64},mesh::Mesh,omega,dof)
     rho = 1000
     pressure = 1im*rho* potential * omega 
     forces = integrate_pressure(mesh,pressure,dof) 

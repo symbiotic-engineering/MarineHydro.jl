@@ -2,7 +2,7 @@
 
 struct FloatingBody
     mesh::Mesh
-    dofs::Dict # {name::Str : dof::AbstractMatrix (nfaces,3)}
+    dofs::Dict # {name::Str : dofs::AbstractMatrix (nfaces,3)}
 
     function FloatingBody(mesh::Mesh, dofs::Dict)
         #add assert statements

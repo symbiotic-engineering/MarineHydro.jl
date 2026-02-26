@@ -118,3 +118,94 @@ end
     @test imag.(julia_fr_force) ≈ imag.(Froude_heave) atol=1e-1
 
 end 
+
+
+
+# Round very small values to zero
+clean(x) = abs(x) < 1e-2 ? 0.0 : x
+
+@testset "Comparison of MDOF Horizontal Cylinder Forces with Capytaine (rtol = 1e-1) " begin
+    # Description of problem
+    h = Inf # sea depth [m]
+    omegas = 0.5:0.5:2 # frequencies [rad/s]
+    beta = 0 # incident wave angle [rad]
+    t_DOFs = ["Surge","Sway","Heave"] # translational DOFs
+    r_DOFs = ["Roll","Pitch","Yaw"] # rotational DOFs
+    DOFs = [t_DOFs; r_DOFs] # all DOFs
+
+    # Create Mesh object
+    radius = 1.5  
+    center = (0.0,0.0,0.0) 
+    len = 2.5
+    faces_max_radius = 0.5
+    cptmesh = cpt.meshes.predefined.mesh_horizontal_cylinder(
+                radius=radius,
+                center=center, 
+                length=len, 
+                faces_max_radius = faces_max_radius
+                ).keep_immersed_part(inplace=true)
+
+    # Create FloatingBody object
+    cptbody = cpt.FloatingBody(mesh=cptmesh)
+    cptbody.center_of_mass = (0.0, 0.0, 0.0)
+    cptbody.rotation_center = (1.0, 1.0, 0.0) # off set for nonzero off-diagoinal elements
+    foreach(dof -> cptbody.add_translation_dof(name=dof), t_DOFs)
+    foreach(dof -> cptbody.add_rotation_dof(name=dof), r_DOFs)
+    cptbody.active_dofs = DOFs
+    cptbody.name = "Horizontal Cylinder"
+
+    # Setup and solve BEM problems
+    solver = cpt.BEMSolver()
+    dof_list = cptbody.active_dofs
+    xr = pyimport("xarray")
+    test_matrix = xr.Dataset(coords=Dict("omega" => omegas, "wave_direction" => [0.0], "radiating_dof" => DOFs))
+    results = cpt.BEMSolver().fill_dataset(test_matrix, cptbody, method="direct")    
+
+    # Get Capytaine values
+    A_cpt = results.added_mass
+    B_cpt = results.radiation_damping
+    F_FK_cpt = results.Froude_Krylov_force 
+    F_D_cpt = results.diffraction_force
+
+    # Get MarineHydro values
+    mesh = Mesh(cptmesh)
+    rigid_dof_list = DOFs
+    rotation_center = collect(cptbody.rotation_center)
+    fb = FloatingBody(mesh, rigid_dof_list, rotation_center)
+
+    A_and_B = [calculate_radiation_forces(fb, omega) for omega in omegas]
+    A_zip, B_zip = zip(A_and_B...)
+    A_mh = merge(A_zip...)
+    B_mh = merge(B_zip...)
+    F_FK_mh = merge([FroudeKrylovForce(fb, omega) for omega in omegas]...)
+    F_D_mh = merge([DiffractionForce(fb,omega) for omega in omegas]...)    
+    
+    for omega in omegas
+        for influenced_dof in DOFs
+            for radiating_dof in DOFs
+                @testset "Omega: $omega, influenced_dof: $influenced_dof, radiating_dof: $radiating_dof" begin
+                    # Test added mass
+                    a_cpt = A_cpt.sel(omega=omega, radiating_dof=radiating_dof, influenced_dof=influenced_dof).values[]
+                    a_mh = A_mh[(omega, influenced_dof, radiating_dof)]
+                    @test  clean(a_cpt) ≈ clean(a_mh) rtol=1e-1  
+                    # Test radiation damping
+                    b_cpt = B_cpt.sel(omega=omega, radiating_dof=radiating_dof, influenced_dof=influenced_dof).values[]
+                    b_mh = B_mh[(omega, influenced_dof, radiating_dof)]
+                    @test  clean(b_cpt) ≈ clean(b_mh) rtol=1e-1
+                end                          
+            end
+            @testset "Omega: $omega, influenced_dof: $influenced_dof" begin
+                # Test FK force
+                f_FK_cpt = F_FK_cpt.sel(omega=omega, influenced_dof=influenced_dof).values[]
+                f_FK_mh = F_FK_mh[(omega, influenced_dof)]
+                @test clean(real(f_FK_cpt)) ≈ clean(real(f_FK_mh)) rtol=1e-1
+                @test clean(imag(f_FK_cpt)) ≈ clean(imag(f_FK_mh)) rtol=1e-1
+                # Test diffraction force
+                f_D_cpt = F_D_cpt.sel(omega=omega, influenced_dof=influenced_dof).values[]
+                f_D_mh = F_D_mh[(omega, influenced_dof)]
+                @test clean(real(f_D_cpt)) ≈ clean(real(f_D_mh)) rtol=1e-1
+                @test clean(imag(f_D_cpt)) ≈ clean(imag(f_D_mh)) rtol=1e-1
+            end            
+        end        
+    end
+end
