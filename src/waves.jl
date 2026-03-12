@@ -1,4 +1,3 @@
-
 # Old version
 function radiation_bc(mesh::Mesh, dof, omega)
     """
@@ -58,18 +57,16 @@ function integrate_pressure(mesh::Mesh, pressure, dof)
 end
   
 function calculate_radiation_forces(floatingbody::FloatingBody, omega)
-    rho = 1023
-    g = 9.81
     Added_mass = Dict{Tuple{Any, String, String}, Any}()
     Radiation_damping = Dict{Tuple{Any, String, String}, Any}()
-    k = omega^2 / g
+    k = omega^2 / SETTINGS.g
     mesh = floatingbody.mesh
     S, D = assemble_matrix_wu(mesh, k)
     rad_bcs = radiation_bc(floatingbody, omega) 
     for rad_dof in keys(floatingbody.dofs) # radiating dofs
         rad_bc = rad_bcs[rad_dof]
         potential = solve(D, S, rad_bc)
-        pressure = 1im * rho * omega * potential
+        pressure = 1im * SETTINGS.rho * omega * potential
         forces = integrate_pressure(floatingbody, pressure)
         for inf_dof in keys(forces) # influenced dofs
             force = forces[inf_dof]
@@ -82,31 +79,29 @@ end
 
 # Old version 
 function calculate_radiation_forces(mesh::Mesh, dof, omega)
-    k = omega^2 / 9.8
+    k = omega^2 / SETTINGS.g
     S, D = assemble_matrix_wu(mesh, k)
     bc = radiation_bc(mesh, dof, omega)
     potential = solve(D, S, bc)
-    pressure = 1im * 1023 * omega * potential
+    pressure = 1im * SETTINGS.rho * omega * potential
     forces = integrate_pressure(mesh, pressure, dof)
     return [real(forces)/omega^2, imag(forces)/omega]
 end
 
 ################################ Diffraction and Excitation methods #########################################
-function airy_waves_potential(points, omega )
-    g = 9.81
-    wavenumber = omega^2/g
+function airy_waves_potential(points, omega)
+    wavenumber = omega^2/SETTINGS.g
     x, y, z = points[:, 1], points[:, 2], points[:, 3]
     beta = 0.0
     wbar = x .* cos(beta) .+ y .* sin(beta)
     cih = exp.(wavenumber .* z)
-    phi = -1im*g/omega .* cih .* exp.(1im * wavenumber * wbar)
+    phi = -1im*SETTINGS.g/omega .* cih .* exp.(1im * wavenumber * wbar)
     return phi
 end
 
 function airy_waves_velocity(points, omega, water_depth = Inf, beta = 0)
     """Compute the fluid velocity for Airy waves at a given point (or array of points)."""
-    g = 9.81
-    k = omega^2/g
+    k = omega^2/SETTINGS.g
 
     x, y, z = points[:, 1], points[:, 2], points[:, 3]
 
@@ -114,7 +109,7 @@ function airy_waves_velocity(points, omega, water_depth = Inf, beta = 0)
     cih = exp.(k .* z)
     sih = exp.(k .* z)
 
-    v = g * k / omega .* exp.(1im * k .* wbar) .* 
+    v = SETTINGS.g * k / omega .* exp.(1im * k .* wbar) .* 
         hcat(cos(beta) .* cih, sin(beta) .* cih, -1im .* sih)
     return v
 end
@@ -132,8 +127,11 @@ end
 
 function airy_waves_pressure(points, omega)
     """Compute the pressure for Airy waves."""
-    rho = 1000
-    return 1im .* omega .* rho .* airy_waves_potential(points, omega)
+
+    # issue with SETTINGS.rho not 1000
+    # set_rho!(1000.0)
+
+    return 1im .* omega .* SETTINGS.rho .* airy_waves_potential(points, omega)
 end
 
 
@@ -166,7 +164,7 @@ function DiffractionForce(floatingbody::FloatingBody,ω)
         RankineReflected(),
         GFWu(),
     )
-    k = ω^2 / 9.8
+    k = ω^2 / SETTINGS.g
     S, D = assemble_matrices(green_functions, mesh, k)
     bc = AiryBC(mesh, ω)
     potential = solve(D, S, bc)
@@ -187,7 +185,7 @@ function DiffractionForce(mesh::Mesh,ω,dof)
         RankineReflected(),
         GFWu(),
     )
-    k = ω^2 / 9.8
+    k = ω^2 / SETTINGS.g
     S, D = assemble_matrices(green_functions, mesh, k)
     bc = AiryBC(mesh, ω)
     potential = solve(D, S, bc)
@@ -202,8 +200,7 @@ end
 
 
 function diffraction_force(floatingbody::FloatingBody,potential,omega)
-    rho = 1000
-    pressure = 1im*rho* potential * omega 
+    pressure = 1im*SETTINGS.rho* potential * omega 
     forces = integrate_pressure(floatingbody::FloatingBody, pressure) # this is a Dict with keys associated with influenced dofs
     return forces  
 end
@@ -211,8 +208,7 @@ end
 
 # Old version
 function diffraction_force(potential::Matrix{ComplexF64},mesh::Mesh,omega,dof)
-    rho = 1000
-    pressure = 1im*rho* potential * omega 
+    pressure = 1im*SETTINGS.rho* potential * omega 
     forces = integrate_pressure(mesh,pressure,dof) 
     return forces  
 end

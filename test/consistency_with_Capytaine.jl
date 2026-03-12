@@ -2,6 +2,8 @@ using MarineHydro
 using Test
 using PyCall
 
+cpt = pyimport("capytaine")
+
 cpt_mesh_sphere = MarineHydro.example_mesh_from_capytaine()
 cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).copy(name="floating two spheres")
 
@@ -71,6 +73,8 @@ cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).cop
         @test diffProbBC ≈ juliaBC atol=1e-3 rtol = 1e-3
 
         capyairy = cpt.bem.airy_waves.airy_waves_pressure(cptmesh.faces_centers, pb)
+        set_rho!(1000.0)
+        # display(SETTINGS.rho)
         juliaairy = airy_waves_pressure(mesh.centers, ω)
         @test abs.(capyairy) ≈ abs.(juliaairy) atol=1e-3 rtol = 1e-3
 
@@ -108,7 +112,6 @@ end
     Froude_heave =  vec(results.Froude_Krylov_force.values)./ non_dimensional_const
     Diff_heave =   vec(results.diffraction_force.values) ./ non_dimensional_const
     mesh = Mesh(cptmesh)
-    g = 9.81
     dof = [0,0,1]
     julia_diff_omega = [DiffractionForce(mesh,w,dof) for w in omegas] ./ non_dimensional_const
     julia_fr_force = [FroudeKrylovForce(mesh,w,dof) for w in omegas] ./ non_dimensional_const

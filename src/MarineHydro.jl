@@ -8,6 +8,9 @@ using ImplicitAD: implicit_linear
 
 const τ̅ = 2π
 
+include("constants.jl")
+export SETTINGS, set_g!, set_rho!,set_τ̅!
+
 include("green_functions/abstract_greens_function.jl")
 export greens, gradient_greens, integral, integral_gradient
 include("green_functions/rankine.jl")
