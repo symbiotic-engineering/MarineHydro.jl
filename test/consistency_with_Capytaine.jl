@@ -73,8 +73,6 @@ cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).cop
         @test diffProbBC ≈ juliaBC atol=1e-3 rtol = 1e-3
 
         capyairy = cpt.bem.airy_waves.airy_waves_pressure(cptmesh.faces_centers, pb)
-        set_rho!(1000.0)
-        # display(SETTINGS.rho)
         juliaairy = airy_waves_pressure(mesh.centers, ω)
         @test abs.(capyairy) ≈ abs.(juliaairy) atol=1e-3 rtol = 1e-3
 
