@@ -1,3 +1,70 @@
+
+# Old functions
+
+function radiation_bc(mesh::Mesh, dof, omega)
+    """
+        radiation_bc(mesh::Mesh, dof, omega)
+
+    Calculates the radiation boundary conditions for floating bodies at each panel.
+
+    # Arguments
+    - `mesh::Mesh`: The mesh of the floating body.
+    - `dof`: The degrees of freedom (assumed same for each panel).
+    - `omega`: The frequency of the incident ocean wave ~~~.
+
+    # Returns
+    - The (Neumann) radiation boundary condition values for each panel.
+"""
+    return -1im .* omega .* sum(mesh.normals .* dof', dims=2)
+end
+
+function integrate_pressure(mesh::Mesh, pressure, dof)
+    normal_dof_amp = -sum(transpose(dof) .* mesh.normals, dims=2)
+    forces = sum(pressure .* normal_dof_amp .* mesh.areas)
+  return forces
+  end
+
+
+  
+function calculate_radiation_forces(mesh::Mesh, dof, omega)
+    k = omega^2 / SETTINGS.g
+    S, D = assemble_matrix_wu(mesh, k)
+    bc = radiation_bc(mesh, dof, omega)
+    potential = solve(D, S, bc)
+    pressure = 1im * SETTINGS.rho * omega * potential
+    forces = integrate_pressure(mesh, pressure, dof)
+    return [real(forces)/omega^2, imag(forces)/omega]
+end
+
+
+function DiffractionForce(mesh::Mesh,ω,dof)
+    green_functions = (
+        Rankine(),
+        RankineReflected(),
+        GFWu(),
+    )
+    k = ω^2 / SETTINGS.g
+    S, D = assemble_matrices(green_functions, mesh, k)
+    bc = AiryBC(mesh, ω)
+    potential = solve(D, S, bc)
+    forces = diffraction_force(potential,mesh, ω,dof)
+    return forces
+end
+
+
+function diffraction_force(potential,mesh, omega,dof)
+    pressure = 1im*SETTINGS.rho* potential * omega 
+    forces = integrate_pressure(mesh,pressure,dof) 
+    return forces  
+  end
+
+
+
+
+
+
+# New function
+
 function integrate_pressure(floatingbody::FloatingBody, pressure)
     mesh = floatingbody.mesh
 

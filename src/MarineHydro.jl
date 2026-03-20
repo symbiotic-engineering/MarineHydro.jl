@@ -42,6 +42,7 @@ export assemble_matrices, assemble_matrix_wu, solve
 include("waves.jl")
 export FroudeKrylovForce, AiryBC, airy_waves_pressure, airy_waves_velocity,airy_waves_potential
 export radiation_bc, integrate_pressure, compute_bc
+export calculate_radiation_forces, DiffractionForce, diffraction_force
 
 include("solve.jl")
 export solve_problem, solve_all_problems
