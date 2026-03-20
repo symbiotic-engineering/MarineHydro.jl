@@ -59,7 +59,11 @@ function diffraction_force(potential,mesh, omega,dof)
   end
 
 
-
+function FroudeKrylovForce(mesh::Mesh, ω,dof)
+    """Compute the Froude-Krylov force."""
+    pressure =  airy_waves_pressure(mesh.centers,  ω)
+    return  integrate_pressure(mesh::Mesh, pressure, dof) 
+end
 
 
 
