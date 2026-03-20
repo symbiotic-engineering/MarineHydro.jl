@@ -1,29 +1,41 @@
 
+using LinearAlgebra: cross, dot, norm
 
 struct FloatingBody
     mesh::Mesh
-    dofs::Dict # {name::Str : dofs::AbstractMatrix (nfaces,3)}
+    dofs::NamedTuple 
+    body_name::String
 
-    function FloatingBody(mesh::Mesh, dofs::Dict)
-        #add assert statements
+    function FloatingBody(mesh::Mesh, dofs::NamedTuple, body_name::String)
+        # add assert statements
 
-        return new(mesh, dofs)
+        return new(mesh, dofs, body_name)
     end
 end
 
 
 
-function FloatingBody(mesh::Mesh, rigid_dof_list::Vector{String}, rotation_center::AbstractVector)
-    dofs = Dict()
+function FloatingBody(mesh::Mesh, rigid_dof_list::Vector{String}, rotation_center::AbstractVector, body_name::String)
+    
+    # generator
+    dof_pairs = (Symbol(name) => if name in ["Surge", "Sway", "Heave"]
+            translational_dofs(mesh, name)
+        else
+            rotational_dofs(mesh, name, rotation_center)
+        end for name in rigid_dof_list)
+            
+    # convert Pair to NamedTuple using ; and splat
+    dofs = (; dof_pairs...)
 
-    for dof_name in rigid_dof_list
-        if dof_name in ["Surge", "Sway", "Heave"]
-            dofs[dof_name] = translational_dofs(mesh, dof_name)
-        elseif dof_name in ["Roll", "Pitch", "Yaw"]
-            dofs[dof_name] = rotational_dofs(mesh, dof_name, rotation_center)
-        end
-    end
-    return FloatingBody(mesh, dofs)
+    return FloatingBody(mesh, dofs, body_name)
+end
+
+
+
+
+# rigid_dof_list can contain symbols or strings 
+function FloatingBody(mesh::Mesh, rigid_dof_list::Vector{Symbol}, rotation_center::AbstractVector, body_name::String)
+    return FloatingBody(mesh, string.(rigid_dof_list), rotation_center, body_name)
 end
 
 function translational_dofs(mesh::Mesh, dof_name::String)
@@ -50,6 +62,18 @@ function rotational_dofs(mesh::Mesh, dof_name::String, rotation_center::Abstract
     end
     pos_vec = face_centers .- rotation_center'
     dof_vecs = cross.(Ref(axis_of_rot), eachrow(pos_vec))
-    dof = stack(dof_vecs)' # make vector of vectors into a matrix
+    dof = copy(stack(dof_vecs)') # make vector of vectors into a matrix
     return dof
 end
+
+# If rotation center not specified, assume it is at origin.
+function FloatingBody(mesh::Mesh, rigid_dof_list::Vector{String}, body_name::String)
+    rotation_center = [0.0,0.0,0.0]
+    for dof in rigid_dof_list
+        if dof in ["Roll","Pitch","Yaw"]
+            display("Setting origin as rotation center.")
+        end
+    end
+    return FloatingBody(mesh, rigid_dof_list, rotation_center, body_name)
+end
+
