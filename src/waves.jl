@@ -69,18 +69,18 @@ end
 
 # New function
 
-function integrate_pressure(floatingbody::FloatingBody, pressure)
+function integrate_pressure(floatingbody::FloatingBody, influenced_dofs::Vector{Symbol}, pressure)
     mesh = floatingbody.mesh
 
-    # generator
-    force_pairs = (dof_symbol => begin
-        dof_mat = floatingbody.dofs[dof_symbol]
-        normal_dof_amp_on_face = -sum(dof_mat .* mesh.normals, dims=2)
-        sum(pressure .* normal_dof_amp_on_face .* mesh.areas) # output
-    end for dof_symbol in keys(floatingbody.dofs))
-
-    # convert Pair to NamedTuple using ; and splat
-    forces = (; force_pairs...)
+    force_values = [
+        let
+            dof_mat = floatingbody.dofs[dof_symbol]
+            normal_dof_amp_on_face = -sum(dof_mat .* mesh.normals, dims=2)
+            sum(pressure .* normal_dof_amp_on_face .* mesh.areas)
+        end 
+        for dof_symbol in influenced_dofs
+    ]
+    forces = NamedTuple{Tuple(influenced_dofs)}(Tuple(force_values))
     return forces
 end
 
@@ -154,11 +154,11 @@ function airy_waves_pressure(points, omega, beta=0)
 end
 
 
-function FroudeKrylovForce(floatingbody::FloatingBody, ω, beta=0)
+function FroudeKrylovForce(floatingbody::FloatingBody, influenced_dofs::Vector{Symbol}, ω, beta=0)
     """Compute the Froude-Krylov force."""
 
     mesh = floatingbody.mesh
     pressure =  airy_waves_pressure(mesh.centers,  ω, beta)
-    forces = integrate_pressure(floatingbody, pressure) 
+    forces = integrate_pressure(floatingbody, influenced_dofs, pressure) 
     return forces 
 end

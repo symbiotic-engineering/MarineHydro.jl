@@ -10,10 +10,13 @@ struct DiffractionProblem <: LinearPotentialFlowProblem
     floatingbody::FloatingBody
     omega::Real
     beta::Real
+    influenced_dofs::Vector{Symbol}
     function DiffractionProblem(floatingbody::FloatingBody,
         omega::Real,
-        beta::Real)
-        return new(floatingbody, omega, beta)
+        beta::Real,
+        influenced_dofs::Vector{Symbol})
+        @assert influenced_dofs ⊆ keys(floatingbody.dofs) "the influenced_dofs Symbols must be a key of floatingbody.dof"
+        return new(floatingbody, omega, beta, influenced_dofs)
     end
 end
 
@@ -22,11 +25,14 @@ struct RadiationProblem <: LinearPotentialFlowProblem
     floatingbody::FloatingBody
     omega::Real
     radiating_dof::Symbol
+    influenced_dofs::Vector{Symbol}
     function RadiationProblem(floatingbody::FloatingBody,
         omega::Real,
-        radiating_dof::Symbol)
-        @assert (radiating_dof in keys(floatingbody.dofs)) "the dof Symbol must be a key of floatingbody.dof"
-        return new(floatingbody, omega, radiating_dof)
+        radiating_dof::Symbol,
+        influenced_dofs::Vector{Symbol})
+        @assert (radiating_dof in keys(floatingbody.dofs)) "the radiating_dof Symbol must be a key of floatingbody.dof"
+        @assert influenced_dofs ⊆ keys(floatingbody.dofs) "the influenced_dofs Symbols must be a key of floatingbody.dof"
+        return new(floatingbody, omega, radiating_dof, influenced_dofs)
     end
 end
 
@@ -63,22 +69,30 @@ end
 # Convert parameters and problem into a Vector of problems
 function problems_from_data(parameters::NamedTuple, floatingbody::FloatingBody)
 
+    # if influenced_dofs not specified, assume all floatingbody dofs are influenced
+    if :influenced_dofs in keys(parameters)
+        inf_dofs = parameters.influenced_dofs
+    else
+        inf_dofs = collect(keys(floatingbody.dofs))
+    end
+
+
     # There is at least one diffraction problem to solve
     if :wave_directions in keys(parameters)
-        diffraction_problems = vec([DiffractionProblem(floatingbody, omega, beta) 
+        diffraction_problems = vec([DiffractionProblem(floatingbody, omega, beta, inf_dofs) 
             for beta in parameters[:wave_directions], 
                 omega in parameters[:wave_frequencies]])
     else
-        diffraction_problems = []
+        diffraction_problems = LinearPotentialFlowProblem[]
     end
 
     # There is at least one radiation problem to solve
     if :radiating_dofs in keys(parameters)
-        radiation_problems = vec([RadiationProblem(floatingbody, omega, dof) 
+        radiation_problems = vec([RadiationProblem(floatingbody, omega, dof, inf_dofs)  
             for dof in parameters[:radiating_dofs], 
                 omega in parameters[:wave_frequencies]])
     else
-        radiation_problems = []
+        radiation_problems = LinearPotentialFlowProblem[]
 
     end
 
@@ -86,53 +100,104 @@ function problems_from_data(parameters::NamedTuple, floatingbody::FloatingBody)
 end
 
 
-# Convert Vector of results into DimStack
-# assemble_data automatically determines what outputs to compute based on what parameters are specified. 
-function assemble_data(parameters::NamedTuple, floatingbody::FloatingBody, results::Vector{LinearPotentialFlowResult})
+# Convert Vector of results into NameTuple of hydrodynamic coefficients
+# assemble_hydrodynamic_coefficients automatically determines what outputs to compute based on what parameters are specified. 
+function assemble_hydrodynamic_coefficients(parameters::NamedTuple, floatingbody::FloatingBody, results::Vector{<:LinearPotentialFlowResult})
 
-    omegas = parameters[:wave_frequencies]
-    betas = parameters[:wave_directions]
-    inf_dofs = keys(floatingbody.dofs)
-    rad_dofs = keys(floatingbody.dofs)
+    omegas = parameters.wave_frequencies
 
-    added_mass_data = zeros(length(inf_dofs),
-        length(rad_dofs),
-        length(omegas))
-    radiation_damping_data = zeros(length(inf_dofs),
-        length(rad_dofs),
-        length(omegas))
-    excitation_force_data = zeros(ComplexF64,
-        length(inf_dofs),
-        length(omegas),
-        length(betas))
-    diffraction_force_data = zeros(ComplexF64,
-        length(inf_dofs),
-        length(omegas),
-        length(betas))
-    Froude_Krylov_force_data = zeros(ComplexF64,
-        length(inf_dofs),
-        length(omegas),
-        length(betas))
+    # if :wave_directions in keys(parameters)
+    #     betas = parameters.wave_directions
+    # else
+    #     betas = [0.0]        
+    # end
+    # if :radiating_dofs in keys(parameters)
+    #     rad_dofs = parameters.radiating_dofs
+    # else
+    #     rad_dofs = [:no_radiating_dofs]         
+    # end
 
-    for result in results
-        if result isa DiffractionResult
-            omega = result.problem.omega
-            beta = result.problem.beta
-            omega_index = findfirst(==(omega),omegas)
-            beta_index = findfirst(==(beta),betas)
-            diffraction_force_data[:,omega_index,beta_index] = collect(result.forces)
-            Froude_Krylov_force_data[:,omega_index,beta_index] = collect(FroudeKrylovForce(floatingbody,omega,beta))
-            excitation_force_data[:,omega_index,beta_index] = diffraction_force_data[:,omega_index,beta_index] + Froude_Krylov_force_data[:,omega_index,beta_index]
+    if :influenced_dofs in keys(parameters)
+        inf_dofs = parameters.influenced_dofs
+    else
+        inf_dofs = collect(keys(floatingbody.dofs))
+    end
 
-        elseif result isa RadiationResult
-            rad_dof = result.problem.radiating_dof
-            omega = result.problem.omega
-            rad_dof_index = findfirst(==(rad_dof),rad_dofs)
-            omega_index = findfirst(==(omega),omegas)
-            added_mass_data[:,rad_dof_index,omega_index] = real(collect(result.forces))/omega^2
-            radiation_damping_data[:,rad_dof_index,omega_index] = imag(collect(result.forces))/omega
-        end
-    end  
+
+    if :wave_directions in keys(parameters)
+        betas = parameters.wave_directions
+        dif_lookup = Dict(
+            (omega = r.problem.omega, beta = r.problem.beta) => r.forces 
+            for r in results if r isa DiffractionResult
+        )
+        inc_lookup = Dict(
+            (omega = r.problem.omega, beta = r.problem.beta) => FroudeKrylovForce(floatingbody,inf_dofs,r.problem.omega,r.problem.beta)
+            for r in results if r isa DiffractionResult
+        )
+        diffraction_force_data = [
+        dif_lookup[(omega=omega,beta=beta)][i] 
+        for i in 1:length(inf_dofs), omega in omegas, beta in betas
+        ]
+        Froude_Krylov_force_data = [
+            inc_lookup[(omega=omega,beta=beta)][i] 
+            for i in 1:length(inf_dofs), omega in omegas, beta in betas
+        ]
+        excitation_force_data = diffraction_force_data .+ Froude_Krylov_force_data
+    else
+        diffraction_force_data = []
+        Froude_Krylov_force_data = []
+        excitation_force_data = []
+    end
+
+    if :radiating_dofs in keys(parameters)
+        rad_dofs = parameters.radiating_dofs
+        rad_lookup = Dict(
+            (radiating_dof = r.problem.radiating_dof, omega = r.problem.omega) => r.forces 
+            for r in results if r isa RadiationResult
+        )
+        added_mass_data = [
+            real(rad_lookup[(radiating_dof=radiating_dof, omega=omega)][i]) / omega^2
+            for i in 1:length(inf_dofs), radiating_dof in rad_dofs, omega in omegas
+        ]
+        radiation_damping_data = [
+            imag(rad_lookup[(radiating_dof=radiating_dof, omega=omega)][i]) / omega
+            for i in 1:length(inf_dofs), radiating_dof in rad_dofs, omega in omegas
+        ]
+    else
+        added_mass_data = []
+        radiation_damping_data = []
+    end
+
+    
+    data = (added_mass=added_mass_data,
+    radiation_damping=radiation_damping_data,
+    diffraction_force=diffraction_force_data,
+    Froude_Krylov_force=Froude_Krylov_force_data,
+    excitation_force=excitation_force_data)
+    
+    return data 
+end
+
+
+
+# Convert NameTuple of hydrodynamic coefficients into DimStack
+function create_DimStack(data::NamedTuple, parameters::NamedTuple, floatingbody::FloatingBody)
+
+    added_mass_data = data.added_mass
+    radiation_damping_data = data.radiation_damping
+    diffraction_force_data = data.diffraction_force
+    Froude_Krylov_force_data = data.Froude_Krylov_force
+    excitation_force_data = data.excitation_force    
+    
+    omegas = parameters.wave_frequencies
+    betas = parameters.wave_directions
+    rad_dofs = parameters.radiating_dofs
+    if :influenced_dofs in keys(parameters)
+        inf_dofs = parameters.influenced_dofs
+    else
+        inf_dofs = collect(keys(floatingbody.dofs))
+    end
+     
 
     radiation_dims = (Dim{:influenced_dofs}(collect(inf_dofs)), 
         Dim{:radiating_dofs}(collect(rad_dofs)),
@@ -150,21 +215,29 @@ function assemble_data(parameters::NamedTuple, floatingbody::FloatingBody, resul
     Froude_Krylov_force_array = DimArray(Froude_Krylov_force_data, diffraction_dims)
 
 
-    data = DimStack((
+    DimStack_of_data = DimStack((
         added_mass = added_mass_array,
         radiation_damping = radiation_damping_array,
         excitation_force = excitation_force_array,
         diffraction_force = diffraction_force_array,
         Froude_Krylov_force = Froude_Krylov_force_array))
-    return data 
+    return DimStack_of_data 
 end
 
 
 
 # Compute DimStack of reuslts based on NamedTuple of parameters (with keys wave_frequencies, wave_directions, and radiating_dofs) and floatingbody struct
+# This is differentiable
 function compute_hydrodynamic_coefficients(parameters::NamedTuple, floatingbody::FloatingBody)
     problems = problems_from_data(parameters, floatingbody)
     results = solve_all_problems(problems)
-    data = assemble_data(parameters, floatingbody, results)
+    data = assemble_hydrodynamic_coefficients(parameters, floatingbody, results)
     return data
+end
+
+# This is NOT differentiable (as is) due to DimStack 
+function compute_and_label_hydrodynamic_coefficients(parameters::NamedTuple, floatingbody::FloatingBody)
+    data = compute_hydrodynamic_coefficients(parameters, floatingbody)
+    DimStack_of_data = create_DimStack(data, parameters, floatingbody)
+    return DimStack_of_data
 end

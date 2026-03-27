@@ -26,15 +26,16 @@ include("green_functions/exact_Guevel_Delhommeau.jl")
 export ExactGuevelDelhommeau
 
 include("meshes.jl")
-export Mesh, element
+export Mesh, element, combine_meshes
 
 include("bodies.jl")
-export FloatingBody
+export FloatingBody, combine_floatingbodies
 
 include("problems_and_results.jl")
 export LinearPotentialFlowProblem, DiffractionProblem, RadiationProblem
 export LinearPotentialFlowResult, DiffractionResult, RadiationResult
-export make_result, problems_from_data, assemble_data, compute_hydrodynamic_coefficients
+export make_result, problems_from_data, assemble_hydrodynamic_coefficients
+export create_DimStack, compute_hydrodynamic_coefficients, compute_and_label_hydrodynamic_coefficients
 
 include("matrix_assembly.jl")
 export assemble_matrices, assemble_matrix_wu, solve

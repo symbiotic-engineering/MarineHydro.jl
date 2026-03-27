@@ -42,6 +42,54 @@ end
 
 
 
+#  Combining multiple Mesh structs into one Mesh struct  
+function combine_meshes(meshlist::Vector{Mesh})
+
+    # Make lists
+    vetrices_list = [mesh.vertices for mesh in meshlist]
+    faces_list = [mesh.faces for mesh in meshlist]
+    centers_list = [mesh.centers for mesh in meshlist]
+    normals_list = [mesh.normals for mesh in meshlist]
+    areas_list = [mesh.areas for mesh in meshlist]
+    radii_list = [mesh.radii for mesh in meshlist]
+    nvetrices_list = [mesh.nvertices for mesh in meshlist]
+    nfaces_list = [mesh.nfaces for mesh in meshlist]
+
+    # Concatinate
+    new_vertices = reduce(vcat, vetrices_list)
+    new_centers = reduce(vcat, centers_list)
+    new_normals = reduce(vcat, normals_list)
+    new_areas = reduce(vcat, areas_list)
+    new_radii = reduce(vcat, radii_list)
+
+    # Sum 
+    new_nvetrices = sum(nvetrices_list) 
+    new_nfaces = sum(nfaces_list) 
+
+    # Recount faces
+    cum_nfaces_list = cumsum(nfaces_list)
+    new_faces = zeros(Int, new_nfaces,4)
+    for (nfaces_index,nfaces) in enumerate(nfaces_list)
+        if nfaces_index == 1
+            nbf = 0
+            nbv = 0
+        else
+            nbf = cum_nfaces_list[nfaces_index-1]
+            nbv = nvetrices_list[nfaces_index-1]
+        end
+        new_faces[nbf+1:nbf+nfaces,:] = faces_list[nfaces_index] .+ nbv
+    end
+
+    # Define combined Mesh struct
+    return Mesh(new_vertices,
+        new_faces,
+        new_centers,
+        new_normals,
+        new_areas,
+        new_radii,
+        new_nvetrices,
+        new_nfaces)    
+end
 
 
 

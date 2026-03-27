@@ -77,3 +77,51 @@ function FloatingBody(mesh::Mesh, rigid_dof_list::Vector{String}, body_name::Str
     return FloatingBody(mesh, rigid_dof_list, rotation_center, body_name)
 end
 
+
+
+
+#  Combining multiple FloatingBody structs into one FloatingBody struct  
+function combine_floatingbodies(floatingbodylist::Vector{FloatingBody},new_body_name::String)
+
+    mesh_list = [floatingbody.mesh for floatingbody in floatingbodylist]
+    dof_list = [floatingbody.dofs for floatingbody in floatingbodylist]  
+    body_name_list = [replace(floatingbody.body_name, " " => "_") for floatingbody in floatingbodylist]
+    num_face_list = [mesh.nfaces for mesh in mesh_list]
+    cum_num_face_list = cumsum(num_face_list)
+    tot_num_faces = sum(num_face_list)
+
+    # New Mesh struct
+    new_mesh = combine_meshes(mesh_list)
+
+    # New FloatingBody dof_name and dof_value
+
+    new_dof_keys = Symbol[]
+    new_dof_mats = []
+    for (body_index,body_name) in enumerate(body_name_list)
+        # define nbf as cumalitive number of faces for previous body
+        # This is used for shifting the location of the dof_mat 
+        if body_index==1
+            nbf = 0
+        else
+            nbf = cum_num_face_list[body_index-1] 
+        end
+        dofs = dof_list[body_index]
+        for dof_name in keys(dofs)
+            new_dof_key = Symbol(join([body_name,dof_name],"__"))
+            dof_mat = dofs[dof_name]
+            new_dof_mat = zeros(tot_num_faces,3)
+            new_dof_mat[nbf+1:nbf+length(dof_mat[:,1]),:] = dof_mat  
+            push!(new_dof_keys,new_dof_key)
+            push!(new_dof_mats,new_dof_mat)        
+        end
+    end
+    new_dofs = NamedTuple{tuple(new_dof_keys...)}(tuple(new_dof_mats...))
+
+    return FloatingBody(new_mesh,new_dofs,new_body_name)
+end
+
+function combine_floatingbodies(floatingbodylist::Vector{FloatingBody})
+    # New FloatingBody name
+    body_name_list = [replace(floatingbody.body_name, " " => "_") for floatingbody in floatingbodylist]
+    return combine_floatingbodies(floatingbodylist::Vector{FloatingBody},join(body_name_list,"+"))
+end

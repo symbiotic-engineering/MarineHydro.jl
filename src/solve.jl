@@ -7,7 +7,7 @@ function solve_problem(problem::LinearPotentialFlowProblem)
     bc = compute_bc(problem)
     potential = solve(D, S, bc)
     pressure = 1im * SETTINGS.rho * problem.omega * potential
-    forces = integrate_pressure(problem.floatingbody, pressure) # NamedTuple of complex forces, where each element corresponds to a dof 
+    forces = integrate_pressure(problem.floatingbody, problem.influenced_dofs, pressure) # NamedTuple of complex forces, where each element corresponds to a dof 
     result = make_result(problem, forces)
     return result 
 end
@@ -16,11 +16,7 @@ end
 # Equivalent to Capytaine's solve_all() function. Eventually add parallelization  settings here.
 function solve_all_problems(problems::Vector{LinearPotentialFlowProblem})
     
-    results = Vector{LinearPotentialFlowResult}(undef, length(problems))
-    
-    for i in 1:length(problems)
-        results[i] = solve_problem(problems[i])
-    end
+    results = [solve_problem(problem) for problem in problems]
     
     return results
 end

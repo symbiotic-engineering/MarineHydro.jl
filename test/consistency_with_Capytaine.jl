@@ -1,6 +1,7 @@
 using MarineHydro
 using Test
 using PyCall
+using DimensionalData
 
 cpt = pyimport("capytaine")
 
@@ -122,14 +123,12 @@ end
 
 
 
-# Round very small values to zero
-clean(x) = abs(x) < 1e-2 ? 0.0 : x
 
-@testset "Comparison of MDOF Horizontal Cylinder Forces with Capytaine (rtol = 1e-1) " begin
+@testset "Hydrodynamic Coefficient Comparison with Capytaine for MDOF Horizontal Cylinder (atol=1e-4 rtol = 1e-1) " begin
     # Description of problem
     h = Inf # sea depth [m]
     omegas = 0.5:0.5:2 # frequencies [rad/s]
-    beta = 0 # incident wave angle [rad]
+    betas = 0.0:pi/4:pi/2 # incident wave angle [rad]
     t_DOFs = ["Surge","Sway","Heave"] # translational DOFs
     r_DOFs = ["Roll","Pitch","Yaw"] # rotational DOFs
     DOFs = [t_DOFs; r_DOFs] # all DOFs
@@ -159,7 +158,7 @@ clean(x) = abs(x) < 1e-2 ? 0.0 : x
     solver = cpt.BEMSolver()
     dof_list = cptbody.active_dofs
     xr = pyimport("xarray")
-    test_matrix = xr.Dataset(coords=Dict("omega" => omegas, "wave_direction" => [0.0], "radiating_dof" => DOFs))
+    test_matrix = xr.Dataset(coords=Dict("omega" => omegas, "wave_direction" => betas, "radiating_dof" => DOFs))
     results = cpt.BEMSolver().fill_dataset(test_matrix, cptbody, method="direct")    
 
     # Get Capytaine values
@@ -167,46 +166,188 @@ clean(x) = abs(x) < 1e-2 ? 0.0 : x
     B_cpt = results.radiation_damping
     F_FK_cpt = results.Froude_Krylov_force 
     F_D_cpt = results.diffraction_force
+    F_ex_cpt = results.excitation_force
 
     # Get MarineHydro values
     mesh = Mesh(cptmesh)
     rigid_dof_list = DOFs
     rotation_center = collect(cptbody.rotation_center)
-    fb = FloatingBody(mesh, rigid_dof_list, rotation_center)
+    floatingbody = FloatingBody(mesh, rigid_dof_list, rotation_center, "Horizontal_Cylinder")
 
-    A_and_B = [calculate_radiation_forces(fb, omega) for omega in omegas]
-    A_zip, B_zip = zip(A_and_B...)
-    A_mh = merge(A_zip...)
-    B_mh = merge(B_zip...)
-    F_FK_mh = merge([FroudeKrylovForce(fb, omega) for omega in omegas]...)
-    F_D_mh = merge([DiffractionForce(fb,omega) for omega in omegas]...)    
-    
+    parameters = (wave_frequencies=omegas, 
+        wave_directions=betas,
+        radiating_dofs=Symbol.(DOFs),
+        influenced_dofs=Symbol.(DOFs))
+
+    mhresults = compute_and_label_hydrodynamic_coefficients(parameters, floatingbody)
+
+    A_mh = mhresults.added_mass
+    B_mh = mhresults.radiation_damping
+    F_FK_mh = mhresults.Froude_Krylov_force
+    F_D_mh = mhresults.diffraction_force
+    F_ex_mh = mhresults.excitation_force
+
     for omega in omegas
         for influenced_dof in DOFs
             for radiating_dof in DOFs
                 @testset "Omega: $omega, influenced_dof: $influenced_dof, radiating_dof: $radiating_dof" begin
                     # Test added mass
                     a_cpt = A_cpt.sel(omega=omega, radiating_dof=radiating_dof, influenced_dof=influenced_dof).values[]
-                    a_mh = A_mh[(omega, influenced_dof, radiating_dof)]
-                    @test  clean(a_cpt) ≈ clean(a_mh) rtol=1e-1  
+                    a_mh = A_mh[influenced_dofs = At(Symbol(influenced_dof)),radiating_dofs = At(Symbol(radiating_dof)), wave_frequencies = At(omega)]
+                    @test  a_cpt ≈ a_mh atol=1e-4 rtol = 1e-1
                     # Test radiation damping
                     b_cpt = B_cpt.sel(omega=omega, radiating_dof=radiating_dof, influenced_dof=influenced_dof).values[]
-                    b_mh = B_mh[(omega, influenced_dof, radiating_dof)]
-                    @test  clean(b_cpt) ≈ clean(b_mh) rtol=1e-1
+                    b_mh = B_mh[influenced_dofs = At(Symbol(influenced_dof)),radiating_dofs = At(Symbol(radiating_dof)), wave_frequencies = At(omega)]
+                    @test  b_cpt ≈ b_mh atol=1e-4 rtol = 1e-1
                 end                          
             end
-            @testset "Omega: $omega, influenced_dof: $influenced_dof" begin
-                # Test FK force
-                f_FK_cpt = F_FK_cpt.sel(omega=omega, influenced_dof=influenced_dof).values[]
-                f_FK_mh = F_FK_mh[(omega, influenced_dof)]
-                @test clean(real(f_FK_cpt)) ≈ clean(real(f_FK_mh)) rtol=1e-1
-                @test clean(imag(f_FK_cpt)) ≈ clean(imag(f_FK_mh)) rtol=1e-1
-                # Test diffraction force
-                f_D_cpt = F_D_cpt.sel(omega=omega, influenced_dof=influenced_dof).values[]
-                f_D_mh = F_D_mh[(omega, influenced_dof)]
-                @test clean(real(f_D_cpt)) ≈ clean(real(f_D_mh)) rtol=1e-1
-                @test clean(imag(f_D_cpt)) ≈ clean(imag(f_D_mh)) rtol=1e-1
-            end            
+            for beta in betas
+                @testset "Omega: $omega, influenced_dof: $influenced_dof, beta: $beta" begin
+                    # Test FK force
+                    f_FK_cpt = F_FK_cpt.sel(omega=omega, influenced_dof=influenced_dof, wave_direction=beta).values[]
+                    f_FK_mh = F_FK_mh[influenced_dofs = At(Symbol(influenced_dof)), wave_frequencies = At(omega), wave_directions = At(beta)]
+                    @test real(f_FK_cpt) ≈ real(f_FK_mh) atol=1e-4 rtol = 1e-1
+                    @test imag(f_FK_cpt) ≈ imag(f_FK_mh) atol=1e-4 rtol = 1e-1
+                    # Test diffraction force
+                    f_D_cpt = F_D_cpt.sel(omega=omega, influenced_dof=influenced_dof, wave_direction=beta).values[]
+                    f_D_mh = F_D_mh[influenced_dofs = At(Symbol(influenced_dof)), wave_frequencies = At(omega), wave_directions = At(beta)]
+                    @test real(f_D_cpt) ≈ real(f_D_mh) atol=1e-4 rtol = 1e-1
+                    @test imag(f_D_cpt) ≈ imag(f_D_mh) atol=1e-4 rtol = 1e-1
+                    # Test excitation force
+                    f_ex_cpt = F_ex_cpt.sel(omega=omega, influenced_dof=influenced_dof, wave_direction=beta).values[]
+                    f_ex_mh = F_ex_mh[influenced_dofs = At(Symbol(influenced_dof)), wave_frequencies = At(omega), wave_directions = At(beta)]
+                    @test real(f_ex_cpt) ≈ real(f_ex_mh) atol=1e-4 rtol = 1e-1
+                    @test imag(f_ex_cpt) ≈ imag(f_ex_mh) atol=1e-4 rtol = 1e-1
+                end 
+            end           
+        end        
+    end
+end
+
+@testset "Hydrodynamic Coefficient Comparison with Capytaine for Array of MDOF Horizontal Cylinders  (atol=1e-4 rtol = 1e-1) " begin
+    # Description of problem
+    h = Inf # sea depth [m]
+    omegas = 0.5:0.5:2 # frequencies [rad/s]
+    betas = 0.0:pi/4:pi/2 # incident wave angle [rad]
+    t_DOFs = ["Heave"] # translational DOFs
+    r_DOFs = ["Roll"] # rotational DOFs
+    DOFs = [t_DOFs; r_DOFs] # all DOFs
+    sep_dis = 50.0 # separation distance
+
+    # Create Mesh objects
+    # Mesh 1
+    radius = 1.5  
+    center1 = (0.0,0.0,0.0) 
+    len = 2.5
+    faces_max_radius = 0.5
+    cptmesh1 = cpt.meshes.predefined.mesh_horizontal_cylinder(
+                radius=radius,
+                center=center1, 
+                length=len, 
+                faces_max_radius = faces_max_radius
+                ).keep_immersed_part(inplace=true)
+    # Mesh 2
+    center2 = (sep_dis,0.0,0.0) 
+    cptmesh2 = cpt.meshes.predefined.mesh_horizontal_cylinder(
+                radius=radius,
+                center=center2, 
+                length=len, 
+                faces_max_radius = faces_max_radius
+                ).keep_immersed_part(inplace=true)
+
+    # Create FloatingBody object
+
+    # FloatingBody 1
+    cptbody1 = cpt.FloatingBody(mesh=cptmesh1)
+    cptbody1.center_of_mass = center1
+    cptbody1.rotation_center = (1.0, 1.0, 0.0) # off set for nonzero off-diagoinal elements
+    foreach(dof -> cptbody1.add_translation_dof(name=dof), t_DOFs)
+    foreach(dof -> cptbody1.add_rotation_dof(name=dof), r_DOFs)
+    cptbody1.active_dofs = DOFs
+    cptbody1.name = "Horizontal_Cylinder_1"
+
+    # FloatingBody 2
+    cptbody2 = cpt.FloatingBody(mesh=cptmesh2)
+    cptbody2.center_of_mass = center2
+    cptbody2.rotation_center = (sep_dis+1.0, 1.0, 0.0) # off set for nonzero off-diagoinal elements
+    foreach(dof -> cptbody2.add_translation_dof(name=dof), t_DOFs)
+    foreach(dof -> cptbody2.add_rotation_dof(name=dof), r_DOFs)
+    cptbody2.active_dofs = DOFs
+    cptbody2.name = "Horizontal_Cylinder_2"
+
+    cptbody = cptbody1 + cptbody2
+
+    # Setup and solve BEM problems
+    solver = cpt.BEMSolver()
+    dof_list = cptbody.dofs
+    all_dofs = string.(collect(keys(dof_list)))
+    xr = pyimport("xarray")
+    test_matrix = xr.Dataset(coords=Dict("omega" => omegas, "wave_direction" => betas, "radiating_dof" => all_dofs))
+    results = cpt.BEMSolver().fill_dataset(test_matrix, cptbody, method="direct")    
+
+    # Get Capytaine values
+    A_cpt = results.added_mass
+    B_cpt = results.radiation_damping
+    F_FK_cpt = results.Froude_Krylov_force 
+    F_D_cpt = results.diffraction_force
+    F_ex_cpt = results.excitation_force
+
+    # Get MarineHydro values
+    # FloatingBody 1
+    mesh1 = Mesh(cptmesh1)
+    rigid_dof_list = DOFs
+    rotation_center1 = collect(cptbody1.rotation_center)
+    floatingbody1 = FloatingBody(mesh1, rigid_dof_list, rotation_center1, "Horizontal_Cylinder_1")
+
+    # FloatingBody 2
+    mesh2 = Mesh(cptmesh2)
+    rotation_center2 = collect(cptbody2.rotation_center)
+    floatingbody2 = FloatingBody(mesh2, rigid_dof_list, rotation_center2, "Horizontal_Cylinder_2")
+
+    floatingbody = combine_floatingbodies([floatingbody1, floatingbody2])
+
+
+    parameters = (wave_frequencies=omegas, 
+        wave_directions=betas,
+        radiating_dofs=collect(keys(floatingbody.dofs)),
+        influenced_dofs=collect(keys(floatingbody.dofs)))
+
+    mhresults = compute_and_label_hydrodynamic_coefficients(parameters, floatingbody)
+
+    A_mh = mhresults.added_mass
+    B_mh = mhresults.radiation_damping
+    F_FK_mh = mhresults.Froude_Krylov_force
+    F_D_mh = mhresults.diffraction_force
+    F_ex_mh = mhresults.excitation_force
+
+    for omega in omegas
+        for influenced_dof in all_dofs
+            for radiating_dof in all_dofs
+                @testset "Omega: $omega, influenced_dof: $influenced_dof, radiating_dof: $radiating_dof" begin
+                    # Test added mass
+                    a_cpt = A_cpt.sel(omega=omega, radiating_dof=radiating_dof, influenced_dof=influenced_dof).values[]
+                    a_mh = A_mh[influenced_dofs = At(Symbol(influenced_dof)),radiating_dofs = At(Symbol(radiating_dof)), wave_frequencies = At(omega)]
+                    @test  a_cpt ≈ a_mh atol=1e-4 rtol = 1e-1
+                    # Test radiation damping
+                    b_cpt = B_cpt.sel(omega=omega, radiating_dof=radiating_dof, influenced_dof=influenced_dof).values[]
+                    b_mh = B_mh[influenced_dofs = At(Symbol(influenced_dof)),radiating_dofs = At(Symbol(radiating_dof)), wave_frequencies = At(omega)]
+                    @test  b_cpt ≈ b_mh atol=1e-4 rtol = 1e-1
+                end                          
+            end
+            for beta in betas
+                @testset "Omega: $omega, influenced_dof: $influenced_dof, beta: $beta" begin
+                    # Test FK force
+                    f_FK_cpt = F_FK_cpt.sel(omega=omega, influenced_dof=influenced_dof, wave_direction=beta).values[]
+                    f_FK_mh = F_FK_mh[influenced_dofs = At(Symbol(influenced_dof)), wave_frequencies = At(omega), wave_directions = At(beta)]
+                    @test real(f_FK_cpt) ≈ real(f_FK_mh) atol=1e-4 rtol = 1e-1
+                    @test imag(f_FK_cpt) ≈ imag(f_FK_mh) atol=1e-4 rtol = 1e-1
+                    # Test diffraction force
+                    f_D_cpt = F_D_cpt.sel(omega=omega, influenced_dof=influenced_dof, wave_direction=beta).values[]
+                    f_D_mh = F_D_mh[influenced_dofs = At(Symbol(influenced_dof)), wave_frequencies = At(omega), wave_directions = At(beta)]
+                    @test real(f_D_cpt) ≈ real(f_D_mh) atol=1e-4 rtol = 1e-1
+                    @test imag(f_D_cpt) ≈ imag(f_D_mh) atol=1e-4 rtol = 1e-1
+                end 
+            end           
         end        
     end
 end
