@@ -1,6 +1,7 @@
 ############
 #  Meshes  #
 ############
+import Base: +
 
 struct Mesh
     vertices::AbstractMatrix
@@ -91,7 +92,13 @@ function combine_meshes(meshlist::Vector{Mesh})
         new_nfaces)    
 end
 
+function +(mesh1::Mesh, mesh2::Mesh)
+    return combine_meshes([mesh1, mesh2])
+end
 
+function +(mesh1::Mesh, mesh_vec::Vector{Mesh})
+    return combine_meshes(vcat(mesh1, mesh_vec))
+end
 
 
 

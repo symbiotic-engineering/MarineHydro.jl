@@ -226,7 +226,7 @@ end
 
 
 
-# Compute DimStack of reuslts based on NamedTuple of parameters (with keys wave_frequencies, wave_directions, and radiating_dofs) and floatingbody struct
+# Compute NamedTuple of of results (with keys added_mass, ...)
 # This is differentiable
 function compute_hydrodynamic_coefficients(parameters::NamedTuple, floatingbody::FloatingBody)
     problems = problems_from_data(parameters, floatingbody)

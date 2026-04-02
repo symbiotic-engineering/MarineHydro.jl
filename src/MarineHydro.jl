@@ -26,10 +26,10 @@ include("green_functions/exact_Guevel_Delhommeau.jl")
 export ExactGuevelDelhommeau
 
 include("meshes.jl")
-export Mesh, element, combine_meshes
+export Mesh, element, combine_meshes, +
 
 include("bodies.jl")
-export FloatingBody, combine_floatingbodies
+export FloatingBody, combine_floatingbodies, +
 
 include("problems_and_results.jl")
 export LinearPotentialFlowProblem, DiffractionProblem, RadiationProblem

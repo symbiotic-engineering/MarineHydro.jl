@@ -1,8 +1,10 @@
 using Test
-using Zygote
 using MarineHydro
 using PyCall
 using LinearAlgebra
+using DifferentiationInterface 
+import ForwardDiff 
+import Zygote
 
 
 @testset "Integrate Pressure " begin
@@ -83,6 +85,7 @@ end
 end
 
 @testset "Gradient accuracy check with Finite diff [w.r.t omega] for MDOF cylnder" begin
+    
     # Description of problem
     omegas = [1.0, 1.5] # frequencies [rad/s]
     beta = 0 # incident wave angle [rad]
@@ -117,13 +120,6 @@ end
         data = compute_hydrodynamic_coefficients(parameters, floatingbody)
         return vcat(vec(data.added_mass), vec(data.radiation_damping)) 
     end
-    function Jacobian_of_rad_problem(Omega)
-        # This inclusion of imaginary inputs, then taking the real value was required to get jacobian to work
-        j = Zygote.jacobian(Omega + 0im) do w
-            A_and_B_vec(real(w)) 
-        end
-        return vec(real.(j)[1])
-    end
 
     # Incident + diffraction solve function
     function F_ex_vec(w)
@@ -133,30 +129,25 @@ end
         data = compute_hydrodynamic_coefficients(parameters, floatingbody)
         return vcat(real.(vec(data.excitation_force)),imag.(vec(data.excitation_force))) 
     end
-    function Jacobian_of_dif_problem(Omega)
-        # This inclusion of imaginary inputs, then taking the real value was required to get jacobian to work
-        j = Zygote.jacobian(Omega + 0im) do w
-            F_ex_vec(real(w)) 
-        end
-        return vec(real.(j)[1])
-    end
+
+    backend = AutoForwardDiff()
+
 
 
     for omega in omegas
         @testset "Verify sensitivity of added mass and damping wrt Omega: $omega" begin
             A_and_B_FD = FiniteDifferences.central_fdm(5, 1)(A_and_B_vec, omega)
-            A_and_B_AD = Jacobian_of_rad_problem(omega)
+            A_and_B_AD = derivative(A_and_B_vec, backend, omega)
             @test A_and_B_AD !== nothing
             @test typeof(A_and_B_AD) == Vector{Float64}
             @test A_and_B_AD ≈ A_and_B_FD atol=1e-6 rtol=1e-6
         end
         @testset "Verify sensitivity of excitation force wrt Omega: $omega" begin
             F_ex_FD = FiniteDifferences.central_fdm(5, 1)(F_ex_vec, omega)
-            F_ex_AD = Jacobian_of_dif_problem(omega)
+            F_ex_AD = derivative(F_ex_vec, backend, omega)
             @test F_ex_AD !== nothing
             @test typeof(F_ex_AD) == Vector{Float64}
             @test F_ex_AD ≈ F_ex_FD atol=1e-6 rtol=1e-6
         end
-    end   
-
+    end  
 end

@@ -1,5 +1,6 @@
 
 using LinearAlgebra: cross, dot, norm
+import Base: +
 
 struct FloatingBody
     mesh::Mesh
@@ -77,7 +78,30 @@ function FloatingBody(mesh::Mesh, rigid_dof_list::Vector{String}, body_name::Str
     return FloatingBody(mesh, rigid_dof_list, rotation_center, body_name)
 end
 
+function make_body_name_list_unique(strings::Vector{String})
+    seen = Dict{String, Int}()
+    result = Vector{String}(undef, length(strings))
 
+    for (i, s) in enumerate(strings)
+        if !haskey(seen, s)
+            result[i] = s
+            seen[s] = 2
+        else
+            count = seen[s]
+            new_s = "$(s)_$(count)"
+            
+            while haskey(seen, new_s) || new_s in strings
+                count += 1
+                new_s = "$(s)_$(count)"
+            end
+            
+            result[i] = new_s
+            seen[s] = count + 1 
+            seen[new_s] = 1     
+        end
+    end
+    return result
+end
 
 
 #  Combining multiple FloatingBody structs into one FloatingBody struct  
@@ -85,10 +109,14 @@ function combine_floatingbodies(floatingbodylist::Vector{FloatingBody},new_body_
 
     mesh_list = [floatingbody.mesh for floatingbody in floatingbodylist]
     dof_list = [floatingbody.dofs for floatingbody in floatingbodylist]  
-    body_name_list = [replace(floatingbody.body_name, " " => "_") for floatingbody in floatingbodylist]
+    body_name_list_temp = [replace(floatingbody.body_name, " " => "_") for floatingbody in floatingbodylist]
     num_face_list = [mesh.nfaces for mesh in mesh_list]
     cum_num_face_list = cumsum(num_face_list)
     tot_num_faces = sum(num_face_list)
+
+    body_name_list = make_body_name_list_unique(body_name_list_temp)
+
+
 
     # New Mesh struct
     new_mesh = combine_meshes(mesh_list)
@@ -122,6 +150,15 @@ end
 
 function combine_floatingbodies(floatingbodylist::Vector{FloatingBody})
     # New FloatingBody name
-    body_name_list = [replace(floatingbody.body_name, " " => "_") for floatingbody in floatingbodylist]
+    body_name_list_temp = [replace(floatingbody.body_name, " " => "_") for floatingbody in floatingbodylist]
+    body_name_list = make_body_name_list_unique(body_name_list_temp)
     return combine_floatingbodies(floatingbodylist::Vector{FloatingBody},join(body_name_list,"+"))
+end
+
+function +(fb1::FloatingBody, fb2::FloatingBody)
+    return combine_floatingbodies([fb1, fb2])
+end
+
+function +(fb1::FloatingBody, fb_vec::Vector{FloatingBody})
+    return combine_floatingbodies(vcat(fb1, fb_vec))
 end
