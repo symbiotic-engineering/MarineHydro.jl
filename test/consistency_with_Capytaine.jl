@@ -60,16 +60,16 @@ cpt_mesh_two_spheres = (cpt_mesh_sphere + cpt_mesh_sphere.translated_x(5.0)).cop
     end
 
     @testset "Diffraction and Excitation methods, boundary condition, airywaves test" begin 
-        cpt = pyimport("capytaine")
-        r = 1.0
+        # cpt = pyimport("capytaine")
+        # r = 1.0
         ω = 1.03
         # Create the mesh and body
-        cptmesh = cpt.mesh_sphere(radius=r, center=(0, 0, 0), resolution=(14, 14)).immersed_part()
+        # cptmesh = cpt.mesh_sphere(radius=r, center=(0, 0, 0), resolution=(14, 14)).immersed_part()
         cptbody = cpt.FloatingBody(cptmesh, name="sphere")
         cptbody.add_translation_dof(name="Heave")
         pb = cpt.DiffractionProblem(body = cptbody,omega = ω,wave_direction= 0 )
         diffProbBC = pb.boundary_condition
-        mesh  = Mesh(cptmesh)
+        # mesh  = Mesh(cptmesh)
         juliaBC = AiryBC(mesh,ω)
         @test diffProbBC ≈ juliaBC atol=1e-3 rtol = 1e-3
 

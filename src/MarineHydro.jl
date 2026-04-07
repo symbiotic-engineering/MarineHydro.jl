@@ -1,6 +1,7 @@
 
 module MarineHydro
 
+using ForwardDiff
 using StaticArrays
 using LinearAlgebra
 using LinearAlgebra: cross, dot, norm
@@ -13,7 +14,7 @@ include("constants.jl")
 export SETTINGS, set_g!, set_rho!
 
 include("green_functions/abstract_greens_function.jl")
-export greens, gradient_greens, integral, integral_gradient
+export greens, gradient_greens, integral, integral_gradient, with_reduced_coordinates
 include("green_functions/rankine.jl")
 export Rankine
 include("green_functions/rankine_reflected.jl")
@@ -26,7 +27,7 @@ include("green_functions/exact_Guevel_Delhommeau.jl")
 export ExactGuevelDelhommeau
 
 include("meshes.jl")
-export Mesh, element, combine_meshes, +
+export Mesh, element, combine_meshes, +, wavebot_mesh
 
 include("bodies.jl")
 export FloatingBody, combine_floatingbodies, +
