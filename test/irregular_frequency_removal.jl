@@ -72,55 +72,55 @@ mh_group  = (mh_results_1, mh_results_2)
 cpt_results = cpt_results_2
 mh_results = mh_results_2
 
-orange = RGB(230/255,159/255,0/255)  
-vermillion = RGB(213/255, 94/255, 0/255) 
-bluishgreen = RGB(0/255, 158/255, 115/255) 
+# orange = RGB(230/255,159/255,0/255)  
+# vermillion = RGB(213/255, 94/255, 0/255) 
+# bluishgreen = RGB(0/255, 158/255, 115/255) 
 
 
-plot(omegas, abs.(vec(cpt_results_1.excitation_force.values)), 
-     xlabel = "Frequency (rad/s)", ylabel = "Excitation Force Magnitude [N]",
-     label = "CPT without lid", marker = :square, markersize = 6, linewidth = 6,
-     linecolor = bluishgreen, markercolor = bluishgreen, linestyle = :dot)
-plot!(omegas, abs.(vec(cpt_results_2.excitation_force.values)), 
-      label = "CPT with lid", marker = :utriangle, markersize = 6, linewidth = 6,
-      linecolor = bluishgreen, markercolor = bluishgreen)
-plot!(omegas, abs.(vec(mh_results_1.excitation_force.data)), 
-      label = "MH without lid", marker = :diamond, markersize = 5, linewidth = 3,
-      linecolor = vermillion, markercolor = vermillion, linestyle = :dot)
-plot!(omegas, abs.(vec(mh_results_2.excitation_force.data)), 
-      label = "MH with lid", marker = :dtriangle, markersize = 5, linewidth = 3,
-      linecolor = vermillion, markercolor = vermillion)
-savefig("Excitation_force_for_lid_method.png")
+# plot(omegas, abs.(vec(cpt_results_1.excitation_force.values)), 
+#      xlabel = "Frequency (rad/s)", ylabel = "Excitation Force Magnitude [N]",
+#      label = "CPT without lid", marker = :square, markersize = 6, linewidth = 6,
+#      linecolor = bluishgreen, markercolor = bluishgreen, linestyle = :dot)
+# plot!(omegas, abs.(vec(cpt_results_2.excitation_force.values)), 
+#       label = "CPT with lid", marker = :utriangle, markersize = 6, linewidth = 6,
+#       linecolor = bluishgreen, markercolor = bluishgreen)
+# plot!(omegas, abs.(vec(mh_results_1.excitation_force.data)), 
+#       label = "MH without lid", marker = :diamond, markersize = 5, linewidth = 3,
+#       linecolor = vermillion, markercolor = vermillion, linestyle = :dot)
+# plot!(omegas, abs.(vec(mh_results_2.excitation_force.data)), 
+#       label = "MH with lid", marker = :dtriangle, markersize = 5, linewidth = 3,
+#       linecolor = vermillion, markercolor = vermillion)
+# savefig("Excitation_force_for_lid_method.png")
 
-plot(omegas, abs.(vec(cpt_results_1.added_mass.values)), 
-     xlabel = "Frequency (rad/s)", ylabel = "Added Mass [kg]",
-     label = "CPT without lid", marker = :square, markersize = 6, linewidth = 6,
-     linecolor = bluishgreen, markercolor = bluishgreen, linestyle = :dot)
-plot!(omegas, abs.(vec(cpt_results_2.added_mass.values)), 
-      label = "CPT with lid", marker = :utriangle, markersize = 6, linewidth = 6,
-      linecolor = bluishgreen, markercolor = bluishgreen)
-plot!(omegas, abs.(vec(mh_results_1.added_mass.data)), 
-      label = "MH without lid", marker = :diamond, markersize = 5, linewidth = 3,
-      linecolor = vermillion, markercolor = vermillion, linestyle = :dot)
-plot!(omegas, abs.(vec(mh_results_2.added_mass.data)), 
-      label = "MH with lid", marker = :dtriangle, markersize = 5, linewidth = 3,
-      linecolor = vermillion, markercolor = vermillion)
-savefig("Added_mass_for_lid_method.png")
+# plot(omegas, abs.(vec(cpt_results_1.added_mass.values)), 
+#      xlabel = "Frequency (rad/s)", ylabel = "Added Mass [kg]",
+#      label = "CPT without lid", marker = :square, markersize = 6, linewidth = 6,
+#      linecolor = bluishgreen, markercolor = bluishgreen, linestyle = :dot)
+# plot!(omegas, abs.(vec(cpt_results_2.added_mass.values)), 
+#       label = "CPT with lid", marker = :utriangle, markersize = 6, linewidth = 6,
+#       linecolor = bluishgreen, markercolor = bluishgreen)
+# plot!(omegas, abs.(vec(mh_results_1.added_mass.data)), 
+#       label = "MH without lid", marker = :diamond, markersize = 5, linewidth = 3,
+#       linecolor = vermillion, markercolor = vermillion, linestyle = :dot)
+# plot!(omegas, abs.(vec(mh_results_2.added_mass.data)), 
+#       label = "MH with lid", marker = :dtriangle, markersize = 5, linewidth = 3,
+#       linecolor = vermillion, markercolor = vermillion)
+# savefig("Added_mass_for_lid_method.png")
 
-plot(omegas, abs.(vec(cpt_results_1.radiation_damping.values)), 
-     xlabel = "Frequency (rad/s)", ylabel = "Radiation Damping [N s / m]",
-     label = "CPT without lid", marker = :square, markersize = 6, linewidth = 6,
-     linecolor = bluishgreen, markercolor = bluishgreen, linestyle = :dot)
-plot!(omegas, abs.(vec(cpt_results_2.radiation_damping.values)), 
-      label = "CPT with lid", marker = :utriangle, markersize = 6, linewidth = 6,
-      linecolor = bluishgreen, markercolor = bluishgreen)
-plot!(omegas, abs.(vec(mh_results_1.radiation_damping.data)), 
-      label = "MH without lid", marker = :diamond, markersize = 5, linewidth = 3,
-      linecolor = vermillion, markercolor = vermillion, linestyle = :dot)
-plot!(omegas, abs.(vec(mh_results_2.radiation_damping.data)), 
-      label = "MH with lid", marker = :dtriangle, markersize = 5, linewidth = 3,
-      linecolor = vermillion, markercolor = vermillion)
-savefig("Radiation_damping_for_lid_method.png")
+# plot(omegas, abs.(vec(cpt_results_1.radiation_damping.values)), 
+#      xlabel = "Frequency (rad/s)", ylabel = "Radiation Damping [N s / m]",
+#      label = "CPT without lid", marker = :square, markersize = 6, linewidth = 6,
+#      linecolor = bluishgreen, markercolor = bluishgreen, linestyle = :dot)
+# plot!(omegas, abs.(vec(cpt_results_2.radiation_damping.values)), 
+#       label = "CPT with lid", marker = :utriangle, markersize = 6, linewidth = 6,
+#       linecolor = bluishgreen, markercolor = bluishgreen)
+# plot!(omegas, abs.(vec(mh_results_1.radiation_damping.data)), 
+#       label = "MH without lid", marker = :diamond, markersize = 5, linewidth = 3,
+#       linecolor = vermillion, markercolor = vermillion, linestyle = :dot)
+# plot!(omegas, abs.(vec(mh_results_2.radiation_damping.data)), 
+#       label = "MH with lid", marker = :dtriangle, markersize = 5, linewidth = 3,
+#       linecolor = vermillion, markercolor = vermillion)
+# savefig("Radiation_damping_for_lid_method.png")
 
 @testset "Comparison of hydrodynamic coefficients with Capytaine using lid method" begin
     # Get Capytaine outputs

@@ -30,7 +30,7 @@ function solve_problem(problem::LinearPotentialFlowProblem; direct::Bool=true, g
         mesh_including_lid = problem.floatingbody.mesh + problem.floatingbody.lid_mesh 
         hull_mask = eachrow(mesh_including_lid.faces) .∈ Ref(eachrow(problem.floatingbody.mesh.faces))
     end
-    bc = zeros(ComplexF64, mesh_including_lid.nfaces)
+    bc = zeros(eltype(bc_on_hull), mesh_including_lid.nfaces)
     bc[hull_mask] = bc_on_hull
 
     # Create influneced matrices (include lid)
